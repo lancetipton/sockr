@@ -22,7 +22,6 @@ module.exports = () =>
       console.log(`Listening at http://${host}:${port}`)
     })
 
-    // { path: get(config, 'websocket.paths.socket', "/socket") }
     sockr(server, config)
 
     return server

@@ -12,9 +12,9 @@ import { Process } from './process'
  *
  * @returns {void}
  */
-const setupSocketCmds = (Proc, socket, content) => {
+const setupSocketCmds = (Proc, socket, config) => {
   // Setup the socket, and update connected peers
-  Manager.setupSocket(socket, content.commands)
+  Manager.setupSocket(socket, config.commands)
 
   // Setup the socket to listen for commands to run
   Proc.bindSocket(socket)
@@ -27,13 +27,13 @@ const setupSocketCmds = (Proc, socket, content) => {
  * @public
  * @export
  * @param {Object} server - Backend http server ( express, restify, etc... )
- * @param {Object} content - Data that can be exposed by the backend socket
+ * @param {Object} config - Data that can be exposed by the backend socket
  *
  * @returns {void}
  */
-export const sockr = (server, content) => {
+export const sockr = (server, config) => {
   // Setup the socket
-  const io = new SocketIO(content.config)
+  const io = new SocketIO(config.socket)
 
   // attache to the server
   io.attach(server)
@@ -42,8 +42,8 @@ export const sockr = (server, content) => {
   Manager.socketIo = Manager.socketIo || io
 
   // Create a new process instance
-  const Proc = new Process(content.commands, content.filters, content.config)
+  const Proc = new Process(config.commands, config.filters, config.config)
 
   // Setup the socket listener, and add socket commands listener
-  io.on('connection', socket => setupSocketCmds(Proc, socket, content))
+  io.on('connection', socket => setupSocketCmds(Proc, socket, config))
 }
