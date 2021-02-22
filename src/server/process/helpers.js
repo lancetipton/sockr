@@ -17,22 +17,23 @@ const CWD_REGEX = /^(\-\-)?(location|loc|workdir|cwd)\s/
  *
  * @returns {boolean} True if the message should be filtered
  */
-export const shouldFilterMessage = (args) => {
+export const shouldFilterMessage = args => {
   const { filters, data, group, cmd, commands } = args
 
-  if(!exists(data) || data === '') return true
+  if (!exists(data) || data === '') return true
 
   const toFilter = [
     ...filters.all,
-    ...get(filters, [ group ], []),
-    ...get(filters, [ cmd ], []),
-    ...get(commands, [ group, cmd, 'filters'], []),
+    ...get(filters, [group], []),
+    ...get(filters, [cmd], []),
+    ...get(commands, [ group, cmd, 'filters' ], []),
   ]
 
-  return toFilter.reduce((shouldFilter, filter) => (
-    shouldFilter || new RegExp(filter, 'gi').test(data)
-  ), false)
-
+  return toFilter.reduce(
+    (shouldFilter, filter) =>
+      shouldFilter || new RegExp(filter, 'gi').test(data),
+    false
+  )
 }
 
 /**
@@ -42,19 +43,23 @@ export const shouldFilterMessage = (args) => {
  * @export
  * @param {Object} config - Process instance config options
  * @param {string} cmd - Command to be run
- * @param {Array} params - Arguments to pass to the command 
+ * @param {Array} params - Arguments to pass to the command
  *
  * @returns {Array} Arguments to pass to the child exec method
  */
-export const addConfig = (cmd, params=noPropArr, config=noOpObj, events=noOpObj) => {
+export const addConfig = (
+  cmd,
+  params = noPropArr,
+  config = noOpObj,
+  events = noOpObj
+) => {
   const defCmd = get(config, 'command.default', '/bin/bash')
   const cmdOverrides = get(config, 'command.overrides', noPropArr)
 
   let cwd = get(config, 'root', process.cwd())
   params.map(param => {
     // Set the current working directory when a param matches
-    CWD_REGEX.test(param.trim()) &&
-    (cwd = param.match(CWD_REGEX)[3].trim())
+    CWD_REGEX.test(param.trim()) && (cwd = param.match(CWD_REGEX)[3].trim())
   })
 
   // Add the callback events to the exec options
@@ -65,7 +70,7 @@ export const addConfig = (cmd, params=noPropArr, config=noOpObj, events=noOpObj)
   // That means we should call it directly,
   // So just return the array with cmd and params
   // The config command, and script are bypassed
-  if(cmdOverrides.includes(cmd)) return [ cmd, params, execOpts, cwd, ]
+  if (cmdOverrides.includes(cmd)) return [ cmd, params, execOpts, cwd ]
 
   // Add the cmd as the first argument to the script
   const scriptParams = [ cmd, ...params ]
@@ -75,7 +80,6 @@ export const addConfig = (cmd, params=noPropArr, config=noOpObj, events=noOpObj)
 
   // Returns an array with the default command, and updated params
   return [ defCmd, params, execOpts, cwd ]
-
 }
 
 /**
@@ -92,10 +96,11 @@ const onInvalidCmd = (message, manager) => {
 
   // Log the invalid command attempt
   console.error('---------- Invalid command ----------')
+  console.error(`group: ${group}`)
   console.error(`name: ${name}`)
   console.error(`cmd: ${cmd}`)
   console.error(`id: ${id}`)
-  console.error(`params: ${params.toString()}`)
+  console.error(`params: ${params.join(' ')}`)
   console.error('---------- Invalid command ----------')
 
   // Update manager, and emit a command failed event
@@ -106,7 +111,7 @@ const onInvalidCmd = (message, manager) => {
     isRunning: manager.isRunning,
     message: 'Failed to run command!',
   })
-  
+
   // Return an empty object
   return noOpObj
 }
@@ -123,13 +128,12 @@ const onInvalidCmd = (message, manager) => {
  * @returns {Object} message object is command is valid, or empty object if it is not
  */
 export const validateCmd = (message, commands, manager, config) => {
-
   // If the allowedCmds array is not set, or it's empty, the ALLOW ALL COMMANDS
   // Which means we default to allow any command to be run
   // This is dangerous, but also allow full customization
-  if(!exists(commands) || isEmptyColl(commands)) return message
+  if (!exists(commands) || isEmptyColl(commands)) return message
 
-  const { name, cmd, id, params, group } = message
+  const { name, cmd, id, group } = message
 
   // Find the command from the group and name
   // The group and name are defined in the command.config as parent properties
@@ -139,5 +143,4 @@ export const validateCmd = (message, commands, manager, config) => {
   return !command || command.cmd.indexOf(cmd) !== 0 || !id || id !== command.id
     ? onInvalidCmd(message, manager)
     : message
-
 }

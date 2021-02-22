@@ -4,9 +4,7 @@ import { rootDir } from 'SRootPath'
 import { Manager } from '../manager'
 import { EventTypes } from '../../constants'
 import { shouldFilterMessage, validateCmd, addConfig } from './helpers'
-import { uuid, get, deepMerge, noOpObj } from '@keg-hub/jsutils'
-
-const execScript = path.join(rootDir, `./scripts/exec.sh`)
+import { deepMerge, noOpObj } from '@keg-hub/jsutils'
 
 /**
  * Class for managing child process run from a socket connection
@@ -21,7 +19,6 @@ const execScript = path.join(rootDir, `./scripts/exec.sh`)
  * @returns {Object} - Process class instance
  */
 export class Process {
-
   config = {
     command: {
       default: '/bin/bash',
@@ -32,7 +29,7 @@ export class Process {
     script: path.join(rootDir, `./scripts/exec.sh`),
   }
 
-  constructor(commands, filters, config){
+  constructor(commands, filters, config) {
     this.commands = commands
     this.filters = filters
     this.manager = config.manager || Manager
@@ -51,13 +48,14 @@ export class Process {
    *
    * @returns {boolean} - If the data should be filtered
    */
-  filterMessage = (data, group, name) => shouldFilterMessage({
-    cmd 
-    group,
-    data: data.trim(),
-    filters: this.filters,
-    commands: this.commands,
-  })
+  filterMessage = (data, group, name) =>
+    shouldFilterMessage({
+      cmd,
+      group,
+      data: data.trim(),
+      filters: this.filters,
+      commands: this.commands,
+    })
 
   /**
    * Callback called when child process prints text to stdout
@@ -139,11 +137,12 @@ export class Process {
    * @returns {void}
    */
   onErrorEmit = (err, group, name) => {
-    const message = err.message.indexOf('ENOENT') !== -1
-      ? `[ SOCKr CMD ERROR ] - Command '${cmd}' does not exist!\n\nMessage:\n${err.message}`
-      : `[ SOCKr CMD ERROR ] - Failed to run command!\n\nMessage:\n${err.message}`
+    const message =
+      err.message.indexOf('ENOENT') !== -1
+        ? `[ SOCKr CMD ERROR ] - Command '${cmd}' does not exist!\n\nMessage:\n${err.message}`
+        : `[ SOCKr CMD ERROR ] - Failed to run command!\n\nMessage:\n${err.message}`
 
-    if(this.filterMessage(err.message, group, name)) return
+    if (this.filterMessage(err.message, group, name)) return
 
     this.manager.isRunning = false
     this.manager.emitAll(EventTypes.CMD_FAIL, {
@@ -152,7 +151,6 @@ export class Process {
       error: true,
       message: message,
     })
-
   }
 
   /**
@@ -203,12 +201,14 @@ export class Process {
       message: 'Running command',
     })
 
-    return exec(...addConfig(
-      cmd,
-      params,
-      this.config,
-      this.buildEvents(cmd, params, group, name),
-    ))
+    return exec(
+      ...addConfig(
+        cmd,
+        params,
+        this.config,
+        this.buildEvents(cmd, params, group, name)
+      )
+    )
   }
 
   /**
@@ -227,33 +227,29 @@ export class Process {
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
       try {
-
         // Validate the cmd to ensure it is allowed to run
-        const message =  validateCmd(
+        const message = validateCmd(
           message,
           this.commands,
           this.manager,
-          this.config,
+          this.config
         )
 
         // If a cmd is returned, then run the exec method
         return cmd && id && this.exec(message)
-
       }
-      catch(err){
+      catch (err) {
         console.error(`[ SOCKr CMD ERROR ] - Error running command: ${cmd}`)
         console.error(e.stack)
 
         this.manager.isRunning = false
-        this.manager.emitAll(EventTypes.CMD_RUNNING, { 
+        this.manager.emitAll(EventTypes.CMD_RUNNING, {
           name,
           group,
           error: true,
           message: `Error running command:\n${err.message}`,
         })
-
       }
     })
   }
-
 }

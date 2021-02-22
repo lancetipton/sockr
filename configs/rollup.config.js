@@ -4,17 +4,23 @@ import cleanup from 'rollup-plugin-cleanup'
 import resolve from '@rollup/plugin-node-resolve'
 
 const config = {
-  input: 'src/index.js',
+  external: [ 'fs', 'path', 'socket.io', '@keg-hub/spawn-cmd' ],
+  input: [
+    {
+      server: 'src/server/setup.js',
+      client: 'src/client/index.js',
+    },
+  ],
   output: [
     {
       dir: 'build/esm',
       format: 'esm',
-      sourcemap: true
+      sourcemap: true,
     },
     {
       dir: `./build/cjs`,
       format: 'cjs',
-      sourcemap: true
+      sourcemap: true,
     },
   ],
   plugins: [

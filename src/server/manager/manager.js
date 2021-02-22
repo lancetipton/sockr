@@ -27,7 +27,7 @@ const getTimeStamp = () => new Date().getTime()
  *
  * @returns {void}
  */
-const logError = (err=noOpObj, method) => {
+const logError = (err = noOpObj, method) => {
   console.log(`[ Socket Error ] --- SocketManager.${method}`)
   err.stack && console.error(err.stack)
 }
@@ -36,7 +36,7 @@ const logError = (err=noOpObj, method) => {
  * Class for managing socket.io sockets
  * Keeps track of connected sockets and currently running command process
  * Handles broadcasting / emitting events
- * @todo - Add authentication 
+ * @todo - Add authentication
  * @class
  * @public
  * @export
@@ -45,32 +45,34 @@ const logError = (err=noOpObj, method) => {
  * @returns {Object} - SocketManager class instance
  */
 export class SocketManager {
-
-  constructor(opts={}){
+  constructor(opts = {}) {
     this.peers = {}
     this.socketIo
     this.isRunning = false
   }
 
-
   /**
-  * Helper to build the message model object
-  * @function
-  * @private
-  * @param {Object} message - Content of the message overriding the default
-  *
-  * @returns {Object} - Message model object
-  */
-  buildMessage = (message=noOpObj) => deepMerge({
-    id: uuid(),
-    message: '',
-    error: false,
-    data: noOpObj,
-    group: 'all',
-    name: 'general',
-    isRunning: this.isRunning,
-    timestamp: getTimeStamp(),
-  }, message)
+   * Helper to build the message model object
+   * @function
+   * @private
+   * @param {Object} message - Content of the message overriding the default
+   *
+   * @returns {Object} - Message model object
+   */
+  buildMessage = (message = noOpObj) =>
+    deepMerge(
+      {
+        id: uuid(),
+        message: '',
+        error: false,
+        data: noOpObj,
+        group: 'all',
+        name: 'general',
+        isRunning: this.isRunning,
+        timestamp: getTimeStamp(),
+      },
+      message
+    )
 
   /**
    * Registers auth for connecting to the socket manager
@@ -101,7 +103,7 @@ export class SocketManager {
    * @returns {string} Id the the added socket
    */
   add = socket => {
-    this.peers[ socket.id ] = socket
+    this.peers[socket.id] = socket
     socket.on('disconnect', _ => this.onDisconnect(socket))
 
     return socket.id
@@ -117,7 +119,7 @@ export class SocketManager {
    *
    * @returns {string} Id the the added socket
    */
-  getId = sockOrId => isStr(sockOrId) && sockOrId || sockOrId.id
+  getId = sockOrId => (isStr(sockOrId) && sockOrId) || sockOrId.id
 
   /**
    * Gets the socket object based on the passed in id
@@ -143,10 +145,10 @@ export class SocketManager {
    */
   toJsonStr = data => {
     try {
-      return JSON.stringify(!isObj(data) && { data } || data)
+      return JSON.stringify((!isObj(data) && { data }) || data)
     }
-    catch(err){
-      console.error(err.stack)
+    catch (err) {
+      logError(err, 'toJsonStr')
       return JSON.stringify({ error: 'Error in SocketManager.toJsonStr' })
     }
   }
@@ -166,14 +168,16 @@ export class SocketManager {
    */
   emit = (socket, tag, data) => {
     try {
-      if(isStr(socket)) socket = this.getSocket(socket)
-      
+      if (isStr(socket)) socket = this.getSocket(socket)
+
       socket && isFunc(socket.emit)
         ? socket.emit(tag, this.toJsonStr(this.buildMessage(data)))
-        : console.error(`A Socket with an emit method is required to emit events!`)
+        : console.error(
+          `A Socket with an emit method is required to emit events!`
+        )
     }
-    catch(err){
-      console.error(err.stack)
+    catch (err) {
+      logError(err, 'emit')
     }
   }
 
@@ -192,17 +196,15 @@ export class SocketManager {
    */
   broadCastAll = (socket, tag, data) => {
     try {
-      if(isStr(socket)) socket = this.getSocket(socket)
-      
-      socket && socket.broadcast &&
+      if (isStr(socket)) socket = this.getSocket(socket)
+
+      socket &&
+        socket.broadcast &&
         isFunc(socket.broadcast.emit) &&
-        socket.broadcast.emit(
-          tag,
-          this.toJsonStr(this.buildMessage(data))
-        )
+        socket.broadcast.emit(tag, this.toJsonStr(this.buildMessage(data)))
     }
-    catch(err){
-      console.error(err.stack)
+    catch (err) {
+      logError(err, 'broadCastAll')
     }
   }
 
@@ -220,16 +222,17 @@ export class SocketManager {
    */
   emitAll = (tag, data) => {
     try {
-      if(!this.socketIo) return console.error(`Socket.IO is not set on SocketManager!`)
-      if(!tag) return console.error(`SocketManager.emitAll requires an event tag as param 2!`)
+      if (!this.socketIo)
+        return console.error(`Socket.IO is not set on SocketManager!`)
+      if (!tag)
+        return console.error(
+          `SocketManager.emitAll requires an event tag as param 2!`
+        )
 
-      this.socketIo.emit(
-        tag,
-        this.toJsonStr(this.buildMessage(data))
-      )
+      this.socketIo.emit(tag, this.toJsonStr(this.buildMessage(data)))
     }
-    catch(err){
-      console.error(err.stack, 'emitAll')
+    catch (err) {
+      logError(err, 'emitAll')
     }
   }
 
@@ -268,9 +271,14 @@ export class SocketManager {
   setupSocket = (socket, commands) => {
     try {
       const id = this.add(socket)
-      if(!id) return console.error('Could not add socket. No id returned.', socket, id)
+      if (!id)
+        return console.error(
+          'Could not add socket. No id returned.',
+          socket,
+          id
+        )
 
-      this.emit(socket, EventTypes.INIT, { 
+      this.emit(socket, EventTypes.INIT, {
         id,
         data: { commands, peers: Object.keys(this.peers) },
         message: 'Server socket initialized!',
@@ -278,13 +286,12 @@ export class SocketManager {
 
       this.broadCastAll(socket, EventTypes.ADD_PEER, {
         id: socket.id,
-        data: { peers: Object.keys(this.peers) }
+        data: { peers: Object.keys(this.peers) },
       })
     }
-    catch(err){
-      console.error(err.stack)
+    catch (err) {
+      logError(err, 'setupSocket')
     }
-
   }
 
   /**
@@ -299,23 +306,20 @@ export class SocketManager {
    *
    * @returns {void}
    */
-  disconnect = (socket, message, tag=EventTypes.NOT_AUTHORIZED) => {
+  disconnect = (socket, message, tag = EventTypes.NOT_AUTHORIZED) => {
     // Ensure we have the socket object and not the id
-    if(isStr(socket)) socket = this.getSocket(socket)
+    if (isStr(socket)) socket = this.getSocket(socket)
 
     // If no socket can be found, then just return
-    if(!socket) return
-    
+    if (!socket) return
+
     // Update the client with the NOT_AUTHORIZED event
-    this.emit(
-      socket,
-      tag,
-      { message: message || 'Missing authorization. Please login!' }
-    )
+    this.emit(socket, tag, {
+      message: message || 'Missing authorization. Please login!',
+    })
 
     // Wait a little bit tl allow the NOT_AUTHORIZED event to be sent,
     setTimeout(() => socket.disconnect(), 100)
-
   }
 
   /**
@@ -330,26 +334,25 @@ export class SocketManager {
    *
    * @returns {void}
    */
-  onDisconnect = (socket) => {
+  onDisconnect = socket => {
     // Ensure we have the socket object and not the id
-    if(isStr(socket)) socket = this.getSocket(socket)
+    if (isStr(socket)) socket = this.getSocket(socket)
 
     try {
-      if(!this.peers[socket.id]) return
-      
+      if (!this.peers[socket.id]) return
+
       delete this.peers[socket.id]
 
-      this.emitAll(EventTypes.PEER_DISCONNECT, { 
+      this.emitAll(EventTypes.PEER_DISCONNECT, {
         id: socket.id,
-        data: { peers: Object.keys(this.peers) }
+        data: { peers: Object.keys(this.peers) },
       })
     }
-    catch(err){
-      console.log(err.stack)
-      if(isObj(this.peers)) delete this.peers[socket.id]
+    catch (err) {
+      logError(err, 'onDisconnect')
+      if (isObj(this.peers)) delete this.peers[socket.id]
     }
   }
-
 }
 
 /**

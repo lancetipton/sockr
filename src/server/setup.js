@@ -1,8 +1,6 @@
 import SocketIO from 'socket.io'
 import { Manager } from './manager'
 import { Process } from './process'
-import { EventTypes } from '../constants'
-import { checkCall, get } from '@ltipton/jsutils'
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -43,10 +41,9 @@ export const sockr = (server, content) => {
   // Ensure we have access to the SocketIO class
   Manager.socketIo = Manager.socketIo || io
 
-    // Create a new process instance
+  // Create a new process instance
   const Proc = new Process(content.commands, content.filters, content.config)
 
   // Setup the socket listener, and add socket commands listener
   io.on('connection', socket => setupSocketCmds(Proc, socket, content))
-
 }
