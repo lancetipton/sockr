@@ -1,6 +1,5 @@
 import path from 'path'
 import { exec } from './exec'
-import { rootDir } from 'SRootPath'
 import { Manager } from '../manager'
 import { EventTypes } from '../../constants'
 import { shouldFilterMessage, validateCmd, addConfig } from './helpers'
@@ -26,7 +25,7 @@ export class Process {
     },
     exec: noOpObj,
     root: process.cwd(),
-    script: path.join(rootDir, `./scripts/exec.sh`),
+    script: path.join(__dirname, `../../../scripts/exec.sh`),
   }
 
   constructor(commands, filters, config) {

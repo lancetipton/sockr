@@ -9,7 +9,7 @@ module.exports = {
   },
   testMatch: [`${ROOT_DIR}src/**/__tests__/**/*.js?(x)`],
   collectCoverageFrom: [`${ROOT_DIR}src/index.js`],
-  moduleFileExtensions: [ 'js', 'json', 'jsx', 'es6' ],
+  moduleFileExtensions: ['js', 'json', 'jsx', 'es6'],
   globals: {
     __DEV__: true,
   },

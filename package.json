@@ -2,8 +2,8 @@
   "name": "sockr",
   "version": "0.0.0",
   "description": "Wrapper around socket.io for the server and client",
-  "main": "build/cjs",
-  "module": "build/esm",
+  "main": "build",
+  "module": "build/client/esm",
   "repository": "https://github.com/lancetipton/sockr",
   "author": "Lance Tipton <lancetipton04@gmail.com>",
   "bugs": {
@@ -29,10 +29,9 @@
   },
   "scripts": {
     "prebuild": "yarn format && yarn test",
-    "build": "yarn build:clean && yarn build:rollup && yarn build:copy",
-    "build:clean": "rimraf ./build/esm && rimraf ./build/umd && rimraf ./build/cjs",
+    "build": "yarn build:clean && yarn build:rollup",
+    "build:clean": "rimraf ./build/server && rimraf ./build/client",
     "build:rollup": "NODE_ENV=production rollup -c ./configs/rollup.config.js",
-    "build:copy": "rimraf docs/parkin && cp -R build/cjs docs/parkin",
     "clean": "yarn clean:lock && yarn cache clean && rimraf node_modules && npm cache clean --force",
     "clean:cache": "yarn cache clean",
     "clean:full": "yarn clean && yarn install",
@@ -41,14 +40,13 @@
     "docs:deploy": "yarn build && gh-pages -d docs",
     "docs:serve": "yarn build:copy && cd ./docs && serve .",
     "docs": "yarn docs:serve",
-    "format:eslint": "eslint --config ./configs/eslintrc.config.js . --fix --quiet",
+    "format:eslint": "eslint --config ./configs/eslintrc.config.js ./src --fix --quiet",
     "format:prettier": "prettier --config ./configs/prettier.config.js --ignore-path .eslintignore --write '**/*.{js,jsx}'",
     "format": "yarn format:prettier && yarn format:eslint",
     "test": "NODE_ENV=test jest --passWithNoTests --detectOpenHandles --no-cache --verbose --config=./configs/jest.config.js"
   },
   "_moduleAliases": {
-    "SRoot": "./",
-    "SRootPath": "./src/server/rootPath"
+    "SRoot": "./"
   },
   "dependencies": {
     "@keg-hub/spawn-cmd": "^0.1.0",
@@ -75,7 +73,7 @@
     "module-alias": "^2.2.2",
     "prettier": "2.0.5",
     "rimraf": "3.0.2",
-    "rollup": "2.23.1",
+    "rollup": "2.39.0",
     "rollup-jest": "0.0.2",
     "rollup-plugin-cleanup": "3.1.1",
     "rollup-plugin-sourcemaps": "0.6.2",

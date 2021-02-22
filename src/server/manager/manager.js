@@ -7,7 +7,7 @@ import {
   noOpObj,
   checkCall,
   deepMerge,
-} from '@ltipton/jsutils'
+} from '@keg-hub/jsutils'
 
 /**
  * Gets the current time, used for a timestamp

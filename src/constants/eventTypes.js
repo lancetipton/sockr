@@ -1,9 +1,9 @@
-import { deepFreeze, keyMirror } from '@ltipton/jsutils'
+import { deepFreeze, keyMap } from '@keg-hub/jsutils'
 
 const TAG_PREFIX = 'SOCKr'
 
 export const EventTypes = deepFreeze(
-  keyMirror(
+  keyMap(
     [
       // General
       `${TAG_PREFIX}:INIT`,

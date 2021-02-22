@@ -2,8 +2,8 @@ require('module-alias/register')
 require('dotenv').config()
 
 const express = require('express')
-const { sockr } = require('./index')
-const { checkCall } = require('@ltipton/jsutils')
+const { sockr } = require('@ltipton/sockr/server')
+const { checkCall } = require('@keg-hub/jsutils')
 const config = require('../../configs/server.config')
 
 // Start express server, and connect to sockr
