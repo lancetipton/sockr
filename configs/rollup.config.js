@@ -2,13 +2,19 @@ import { babel } from '@rollup/plugin-babel'
 import commonjs from '@rollup/plugin-commonjs'
 import cleanup from 'rollup-plugin-cleanup'
 import resolve from '@rollup/plugin-node-resolve'
+import json from '@rollup/plugin-json'
+import globals from 'rollup-plugin-node-globals'
+import builtins from 'rollup-plugin-node-builtins'
 
-const shared = () => {
+const shared = config => {
   return {
     plugins: [
-      resolve(),
-      commonjs(),
       babel({ babelHelpers: 'bundled' }),
+      resolve(config.resolve),
+      commonjs(),
+      json(),
+      // globals(),
+      // builtins(),
       cleanup(),
     ],
   }
@@ -16,7 +22,29 @@ const shared = () => {
 
 const configs = {
   server: {
-    external: ['fs', 'path', 'socket.io', '@keg-hub/spawn-cmd'],
+    external: [
+      'fs',
+      'util',
+      'http',
+      'punycode',
+      'querystring',
+      'process',
+      'events',
+      'path',
+      'socket.io',
+      'readline',
+      'stream',
+      'assert',
+      'child_process',
+      'crypto',
+      'os',
+      'tty',
+      'buffer',
+      'string_decoder',
+      'module',
+      '@keg-hub/spawn-cmd',
+      'lodash'
+    ],
     input: 'src/server/setup.js',
     output: [
       {
@@ -44,9 +72,25 @@ const configs = {
   },
 }
 
-export default Array.from(['server', 'client']).map(type => {
+const pluginConfig = {
+  server: {
+    resolve: {
+      preferBuiltins: true,
+    },
+  },
+  client: {
+    resolve: {
+      browser: true,
+      preferBuiltins: true,
+    },
+  },
+}
+
+const builds = ['client']
+// const builds = ['server', 'client']
+export default builds.map(type => {
   return {
     ...configs[type],
-    ...shared(type),
+    ...shared(pluginConfig[type]),
   }
 })

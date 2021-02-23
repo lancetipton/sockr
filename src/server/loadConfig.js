@@ -1,14 +1,10 @@
+const path = require('path')
+const appRootPath = require('app-root-path')
+const { argsParse } = require('@keg-hub/args-parse')
+const { serverConfig:defServerConfig } = require('../../configs/server.config.js')
+const { isFunc, get, noOpObj, deepMerge, reduceObj } = require('@keg-hub/jsutils')
 
-import appRootPath = from 'app-root-path'
-import { argsParse } from "@keg-hub/args-parse"
-import defServerConfig from '../../configs/server.config.js'
-import { isFunc, noOpObj, deepMerge, reduceObj } from "@keg-hub/jsutils"
-
-const {
-  SOCKR_CONFIG,
-  SOCKR_CMD_GROUP,
-  NODE_ENV='development'
-} = process.env
+const { SOCKR_CONFIG, SOCKR_CMD_GROUP, NODE_ENV = 'development' } = process.env
 
 const appRoot = appRootPath.path
 
@@ -20,14 +16,15 @@ const task = {
   name: 'sockr',
   options: {
     config: {
-      alias: ['sockr', 'sockrConfig' ],
-      description: "Path to a custom Sockr config file",
+      alias: ['sockr', 'sockrConfig'],
+      description: 'Path to a custom Sockr config file',
     },
     group: {
-      alias: [ 'commands', 'type', 'context' ],
-      description: 'Group of commands the server has access to. Defined in the sockr config',
-    }
-  }
+      alias: ['commands', 'type', 'context'],
+      description:
+        'Group of commands the server has access to. Defined in the sockr config',
+    },
+  },
 }
 
 const getConfigPath = async () => {
@@ -41,32 +38,33 @@ const getConfigPath = async () => {
   }
 }
 
-const loadConfig = configPath => {
+const setupConfig = (configPath, serverConfig) => {
   try {
     // Try to load the config through require
     const loadedConfig = require(configPath)
-    return isFunc(loadedConfig)
-      ? loadedConfig()
-      : loadedConfig
-  }
-  catch(err){
+    return isFunc(loadedConfig) ? loadedConfig() : loadedConfig
+  } catch (err) {
     // If config load fails, then try to load the config relative to the apps root directory
-    const relativePath = path.join(appRoot, configPath)
+    const relativePath = configPath && path.join(appRoot, configPath)
 
-    if(relativePath !== configPath)
-      return loadConfig(path.join(appRoot, configPath))
-    
+    if (relativePath !== configPath)
+      return setupConfig(path.join(appRoot, configPath))
+
     // Otherwise return an empty object
-    console.warn(`Sockr custom config could not be loaded. Using default!`, configPath)
+    !serverConfig && 
+      console.warn(
+        `Sockr custom config could not be loaded. Using default!`,
+        configPath
+      )
+
     return noOpObj
   }
 }
 
+const buildConfig = (customConfig, serverConfig, group, env) => {
+  const config = deepMerge(defServerConfig, customConfig, serverConfig)
 
-const buildConfig = (custom, group, env) => {
-  const config = deepMerge(defServerConfig, custom)
-
-  // Get the commands by group separated by environment 
+  // Get the commands by group separated by environment
   const { development, production, ...other } = deepMerge(
     get(config, `groups.default.commands`),
     get(config, `groups.${group}.commands`)
@@ -74,9 +72,10 @@ const buildConfig = (custom, group, env) => {
 
   // If in production, only use the production commands
   // Otherwise use them all, with priority to development commands
-  const activeCommands = NODE_ENV === 'production'
-    ? production
-    : deepMerge(other, production, development)
+  const activeCommands =
+    NODE_ENV === 'production'
+      ? production
+      : deepMerge(other, production, development)
 
   const filters = deepMerge(
     get(config, `groups.default.filters`),
@@ -85,22 +84,38 @@ const buildConfig = (custom, group, env) => {
 
   return {
     ...config,
+    socket: {
+      path: get(config, 'socket.path', config.path),
+      host: get(config, 'socket.host', config.host),
+      port: get(config, 'socket.port', config.port),
+    },
     filters,
-    commands: reduceObj(activeCommands, (key, value, groups) => {
-      groups[key] = reduceObj(groups[key], (command, options, commands) => {
-        commands[command].id = uuid()
-        return commands
-      }, groups[key])
+    commands: reduceObj(
+      activeCommands,
+      (key, value, groups) => {
+        groups[key] = reduceObj(
+          groups[key],
+          (command, options, commands) => {
+            commands[command].id = uuid()
+            return commands
+          },
+          groups[key]
+        )
 
-      return groups
-    }, activeCommands)
+        return groups
+      },
+      activeCommands
+    ),
   }
-
 }
 
-export const loadConfig = config => {
+const loadConfig = async config => {
   const { env, configPath, group } = await getConfigPath()
-  const config = loadConfig(configPath)
+  const loadedConfig = setupConfig(configPath, config)
 
-  return buildConfig(config, group, env)
+  return buildConfig(loadedConfig, config, group, env)
+}
+
+module.exports = {
+  loadConfig
 }

@@ -1,4 +1,4 @@
-export const sockrConfig = {
+const sockrConfig = {
   socket: {
     path: '/socket',
   },
@@ -8,7 +8,7 @@ export const sockrConfig = {
       filters: {},
       commands: {
         development: {
-        /**
+          /**
           Add named commands here
           example: {
             "group": "default",
@@ -41,6 +41,10 @@ export const sockrConfig = {
         },
         production: {},
       },
-    }
+    },
   },
+}
+
+module.exports = {
+  sockrConfig
 }

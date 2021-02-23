@@ -1,5 +1,5 @@
-import { EventTypes } from '../../constants'
-import {
+const { EventTypes } = require('../../constants')
+const {
   isFunc,
   isObj,
   isStr,
@@ -7,7 +7,7 @@ import {
   noOpObj,
   checkCall,
   deepMerge,
-} from '@keg-hub/jsutils'
+} = require('@keg-hub/jsutils')
 
 /**
  * Gets the current time, used for a timestamp
@@ -44,7 +44,7 @@ const logError = (err = noOpObj, method) => {
  *
  * @returns {Object} - SocketManager class instance
  */
-export class SocketManager {
+class SocketManager {
   constructor(opts = {}) {
     this.peers = {}
     this.socketIo
@@ -146,8 +146,7 @@ export class SocketManager {
   toJsonStr = data => {
     try {
       return JSON.stringify((!isObj(data) && { data }) || data)
-    }
-    catch (err) {
+    } catch (err) {
       logError(err, 'toJsonStr')
       return JSON.stringify({ error: 'Error in SocketManager.toJsonStr' })
     }
@@ -173,10 +172,9 @@ export class SocketManager {
       socket && isFunc(socket.emit)
         ? socket.emit(tag, this.toJsonStr(this.buildMessage(data)))
         : console.error(
-          `A Socket with an emit method is required to emit events!`
-        )
-    }
-    catch (err) {
+            `A Socket with an emit method is required to emit events!`
+          )
+    } catch (err) {
       logError(err, 'emit')
     }
   }
@@ -202,8 +200,7 @@ export class SocketManager {
         socket.broadcast &&
         isFunc(socket.broadcast.emit) &&
         socket.broadcast.emit(tag, this.toJsonStr(this.buildMessage(data)))
-    }
-    catch (err) {
+    } catch (err) {
       logError(err, 'broadCastAll')
     }
   }
@@ -230,8 +227,7 @@ export class SocketManager {
         )
 
       this.socketIo.emit(tag, this.toJsonStr(this.buildMessage(data)))
-    }
-    catch (err) {
+    } catch (err) {
       logError(err, 'emitAll')
     }
   }
@@ -288,8 +284,7 @@ export class SocketManager {
         id: socket.id,
         data: { peers: Object.keys(this.peers) },
       })
-    }
-    catch (err) {
+    } catch (err) {
       logError(err, 'setupSocket')
     }
   }
@@ -347,8 +342,7 @@ export class SocketManager {
         id: socket.id,
         data: { peers: Object.keys(this.peers) },
       })
-    }
-    catch (err) {
+    } catch (err) {
       logError(err, 'onDisconnect')
       if (isObj(this.peers)) delete this.peers[socket.id]
     }
@@ -358,4 +352,9 @@ export class SocketManager {
 /**
  * Creates a singleton, that can be imported with consistent data
  */
-export const Manager = new SocketManager()
+const Manager = new SocketManager()
+
+module.exports = {
+  Manager,
+  SocketManager
+}

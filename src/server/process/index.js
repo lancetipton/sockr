@@ -1,1 +1,1 @@
-export * from './process'
+module.exports = require('./process')

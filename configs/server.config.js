@@ -1,6 +1,13 @@
-import sockrConfig from './sockr.config.js'
-import { deepMerge } from "@keg-hub/jsutils"
+const { sockrConfig } = require('./sockr.config.js')
+const { deepMerge } = require('@keg-hub/jsutils')
 
-export const config = deepMerge(sockrConfig, {
+const serverConfig = deepMerge(sockrConfig, {
   // Config settings for the backend server only
+  socket: {
+    host: '0.0.0.0'
+  },
 })
+
+module.exports = {
+  serverConfig
+}

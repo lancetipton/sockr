@@ -1,6 +1,7 @@
-import SocketIO from 'socket.io'
-import { Manager } from './manager'
-import { Process } from './process'
+const SocketIO = require('socket.io')
+const { Manager } = require('./manager')
+const { Process } = require('./process')
+const { loadConfig } = require('./loadConfig')
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -31,9 +32,12 @@ const setupSocketCmds = (Proc, socket, config) => {
  *
  * @returns {void}
  */
-export const sockr = (server, config) => {
+const sockr = async (server, config) => {
+
+  const sockrConfig = await loadConfig(config)
+
   // Setup the socket
-  const io = new SocketIO(config.socket)
+  const io = SocketIO({ path: sockrConfig.socket.path })
 
   // attache to the server
   io.attach(server)
@@ -42,8 +46,13 @@ export const sockr = (server, config) => {
   Manager.socketIo = Manager.socketIo || io
 
   // Create a new process instance
-  const Proc = new Process(config.commands, config.filters, config.config)
+  const Proc = new Process(sockrConfig.commands, sockrConfig.filters, sockrConfig.config)
 
   // Setup the socket listener, and add socket commands listener
-  io.on('connection', socket => setupSocketCmds(Proc, socket, config))
+  io.on('connection', socket => setupSocketCmds(Proc, socket, sockrConfig))
+
+}
+
+module.exports = {
+  sockr
 }

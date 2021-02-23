@@ -1,1 +1,1 @@
-export * from './eventTypes'
+module.exports = require('./eventTypes')

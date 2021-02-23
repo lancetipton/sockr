@@ -1,1 +1,1 @@
-export * from './manager'
+module.exports = require('./manager')

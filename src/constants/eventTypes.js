@@ -1,8 +1,8 @@
-import { deepFreeze, keyMap } from '@keg-hub/jsutils'
+const { deepFreeze, keyMap } = require('@keg-hub/jsutils')
 
 const TAG_PREFIX = 'SOCKr'
 
-export const EventTypes = deepFreeze(
+const EventTypes = deepFreeze(
   keyMap(
     [
       // General
@@ -27,3 +27,7 @@ export const EventTypes = deepFreeze(
     true
   )
 )
+
+module.exports = {
+  EventTypes
+}

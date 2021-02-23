@@ -37,6 +37,7 @@
     "clean:full": "yarn clean && yarn install",
     "clean:lock": "rimraf ./yarn.lock && rimraf ./package.lock",
     "dev": "NODE_ENV=development rollup -c ./configs/rollup.config.js -w",
+    "server": "",
     "docs:deploy": "yarn build && gh-pages -d docs",
     "docs:serve": "yarn build:copy && cd ./docs && serve .",
     "docs": "yarn docs:serve",
@@ -51,8 +52,10 @@
   "dependencies": {
     "@keg-hub/args-parse": "6.2.2",
     "@keg-hub/spawn-cmd": "0.1.0",
+    "@rollup/plugin-json": "^4.1.0",
     "app-root-path": "3.0.0",
-    "socket.io": "3.1.1"
+    "socket.io": "3.1.1",
+    "socket.io-client": "3.1.1"
   },
   "devDependencies": {
     "@babel/cli": "7.12.1",
@@ -78,6 +81,8 @@
     "rollup": "2.39.0",
     "rollup-jest": "0.0.2",
     "rollup-plugin-cleanup": "3.1.1",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
     "rollup-plugin-sourcemaps": "0.6.2",
     "rollup-plugin-terser": "7.0.2"
   }

@@ -1,5 +1,5 @@
-import { spawnCmd } from '@keg-hub/spawn-cmd'
-import { noOpObj, noPropArr } from '@keg-hub/jsutils'
+const { spawnCmd } = require('@keg-hub/spawn-cmd')
+const { noOpObj, noPropArr } = require('@keg-hub/jsutils')
 
 /**
  * Default options when executing a command
@@ -25,7 +25,7 @@ const defOpts = {
  *
  * @returns {void}
  */
-export const exec = (
+const exec = (
   cmd,
   args = noPropArr,
   opts = noOpObj,
@@ -45,4 +45,9 @@ export const exec = (
       },
     },
   })
+}
+
+
+module.exports = {
+  exec
 }

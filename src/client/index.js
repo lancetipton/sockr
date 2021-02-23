@@ -1,1 +1,1 @@
-console.log('I am the client')
+export * from './sockr'

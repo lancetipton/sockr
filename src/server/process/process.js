@@ -1,9 +1,9 @@
-import path from 'path'
-import { exec } from './exec'
-import { Manager } from '../manager'
-import { EventTypes } from '../../constants'
-import { shouldFilterMessage, validateCmd, addConfig } from './helpers'
-import { deepMerge, noOpObj } from '@keg-hub/jsutils'
+const path = require('path')
+const { exec } = require('./exec')
+const { Manager } = require('../manager')
+const { EventTypes } = require('../../constants')
+const { shouldFilterMessage, validateCmd, addConfig } = require('./helpers')
+const { deepMerge, noOpObj } = require('@keg-hub/jsutils')
 
 /**
  * Class for managing child process run from a socket connection
@@ -17,7 +17,7 @@ import { deepMerge, noOpObj } from '@keg-hub/jsutils'
  *
  * @returns {Object} - Process class instance
  */
-export class Process {
+class Process {
   config = {
     command: {
       default: '/bin/bash',
@@ -31,7 +31,7 @@ export class Process {
   constructor(commands, filters, config) {
     this.commands = commands
     this.filters = filters
-    this.manager = config.manager || Manager
+    this.manager = Manager
     this.config = deepMerge(this.config, config)
   }
 
@@ -236,8 +236,7 @@ export class Process {
 
         // If a cmd is returned, then run the exec method
         return cmd && id && this.exec(message)
-      }
-      catch (err) {
+      } catch (err) {
         console.error(`[ SOCKr CMD ERROR ] - Error running command: ${cmd}`)
         console.error(e.stack)
 
@@ -251,4 +250,9 @@ export class Process {
       }
     })
   }
+}
+
+
+module.exports = {
+  Process
 }
