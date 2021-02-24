@@ -25,13 +25,7 @@ const defOpts = {
  *
  * @returns {void}
  */
-const exec = (
-  cmd,
-  args = noPropArr,
-  opts = noOpObj,
-  cwd,
-  env = noOpObj
-) => {
+const exec = (cmd, args = noPropArr, opts = noOpObj, cwd, env = noOpObj) => {
   return spawnCmd(cmd, {
     args,
     cwd: cwd || opts.cwd || process.cwd(),
@@ -47,7 +41,6 @@ const exec = (
   })
 }
 
-
 module.exports = {
-  exec
+  exec,
 }

@@ -3,8 +3,15 @@ import commonjs from '@rollup/plugin-commonjs'
 import cleanup from 'rollup-plugin-cleanup'
 import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
-import globals from 'rollup-plugin-node-globals'
-import builtins from 'rollup-plugin-node-builtins'
+import { join } from 'path'
+
+const { DOC_APP_PATH } = process.env
+const clientOutputDir = Boolean(DOC_APP_PATH)
+  ? join(
+      __dirname,
+      `../../../../../node_modules/@ltipton/sockr/build/client/esm`
+    )
+  : 'build/client/esm'
 
 const shared = config => {
   return {
@@ -13,8 +20,6 @@ const shared = config => {
       resolve(config.resolve),
       commonjs(),
       json(),
-      // globals(),
-      // builtins(),
       cleanup(),
     ],
   }
@@ -22,29 +27,7 @@ const shared = config => {
 
 const configs = {
   server: {
-    external: [
-      'fs',
-      'util',
-      'http',
-      'punycode',
-      'querystring',
-      'process',
-      'events',
-      'path',
-      'socket.io',
-      'readline',
-      'stream',
-      'assert',
-      'child_process',
-      'crypto',
-      'os',
-      'tty',
-      'buffer',
-      'string_decoder',
-      'module',
-      '@keg-hub/spawn-cmd',
-      'lodash'
-    ],
+    external: [],
     input: 'src/server/setup.js',
     output: [
       {
@@ -55,7 +38,7 @@ const configs = {
     ],
   },
   client: {
-    external: [],
+    external: ['react'],
     input: 'src/client/index.js',
     output: [
       {
@@ -64,7 +47,7 @@ const configs = {
         sourcemap: true,
       },
       {
-        dir: 'build/client/esm',
+        dir: clientOutputDir,
         format: 'esm',
         sourcemap: true,
       },
@@ -81,13 +64,11 @@ const pluginConfig = {
   client: {
     resolve: {
       browser: true,
-      preferBuiltins: true,
     },
   },
 }
 
 const builds = ['client']
-// const builds = ['server', 'client']
 export default builds.map(type => {
   return {
     ...configs[type],

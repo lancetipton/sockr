@@ -46,5 +46,5 @@ const sockrConfig = {
 }
 
 module.exports = {
-  sockrConfig
+  sockrConfig,
 }

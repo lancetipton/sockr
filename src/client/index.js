@@ -1,1 +1,1 @@
-export * from './sockr'
+export * from './websocket'

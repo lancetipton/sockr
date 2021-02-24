@@ -1,8 +1,16 @@
 const path = require('path')
 const appRootPath = require('app-root-path')
 const { argsParse } = require('@keg-hub/args-parse')
-const { serverConfig:defServerConfig } = require('../../configs/server.config.js')
-const { isFunc, get, noOpObj, deepMerge, reduceObj } = require('@keg-hub/jsutils')
+const {
+  serverConfig: defServerConfig,
+} = require('../../configs/server.config.js')
+const {
+  isFunc,
+  get,
+  noOpObj,
+  deepMerge,
+  reduceObj,
+} = require('@keg-hub/jsutils')
 
 const { SOCKR_CONFIG, SOCKR_CMD_GROUP, NODE_ENV = 'development' } = process.env
 
@@ -16,11 +24,11 @@ const task = {
   name: 'sockr',
   options: {
     config: {
-      alias: ['sockr', 'sockrConfig'],
+      alias: [ 'sockr', 'sockrConfig' ],
       description: 'Path to a custom Sockr config file',
     },
     group: {
-      alias: ['commands', 'type', 'context'],
+      alias: [ 'commands', 'type', 'context' ],
       description:
         'Group of commands the server has access to. Defined in the sockr config',
     },
@@ -43,7 +51,8 @@ const setupConfig = (configPath, serverConfig) => {
     // Try to load the config through require
     const loadedConfig = require(configPath)
     return isFunc(loadedConfig) ? loadedConfig() : loadedConfig
-  } catch (err) {
+  }
+  catch (err) {
     // If config load fails, then try to load the config relative to the apps root directory
     const relativePath = configPath && path.join(appRoot, configPath)
 
@@ -51,7 +60,7 @@ const setupConfig = (configPath, serverConfig) => {
       return setupConfig(path.join(appRoot, configPath))
 
     // Otherwise return an empty object
-    !serverConfig && 
+    !serverConfig &&
       console.warn(
         `Sockr custom config could not be loaded. Using default!`,
         configPath
@@ -117,5 +126,5 @@ const loadConfig = async config => {
 }
 
 module.exports = {
-  loadConfig
+  loadConfig,
 }

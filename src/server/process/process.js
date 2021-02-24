@@ -236,7 +236,8 @@ class Process {
 
         // If a cmd is returned, then run the exec method
         return cmd && id && this.exec(message)
-      } catch (err) {
+      }
+      catch (err) {
         console.error(`[ SOCKr CMD ERROR ] - Error running command: ${cmd}`)
         console.error(e.stack)
 
@@ -252,7 +253,6 @@ class Process {
   }
 }
 
-
 module.exports = {
-  Process
+  Process,
 }

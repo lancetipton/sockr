@@ -33,7 +33,6 @@ const setupSocketCmds = (Proc, socket, config) => {
  * @returns {void}
  */
 const sockr = async (server, config) => {
-
   const sockrConfig = await loadConfig(config)
 
   // Setup the socket
@@ -46,13 +45,16 @@ const sockr = async (server, config) => {
   Manager.socketIo = Manager.socketIo || io
 
   // Create a new process instance
-  const Proc = new Process(sockrConfig.commands, sockrConfig.filters, sockrConfig.config)
+  const Proc = new Process(
+    sockrConfig.commands,
+    sockrConfig.filters,
+    sockrConfig.config
+  )
 
   // Setup the socket listener, and add socket commands listener
   io.on('connection', socket => setupSocketCmds(Proc, socket, sockrConfig))
-
 }
 
 module.exports = {
-  sockr
+  sockr,
 }

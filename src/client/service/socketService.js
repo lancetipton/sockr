@@ -1,7 +1,6 @@
 import io from 'socket.io-client'
-import { checkCall, get } from '@keg-hub/jsutils'
-
-const isDEV = process.env.NODE_ENV === 'development'
+import { checkCall, get, isFunc } from '@keg-hub/jsutils'
+import { EventTypes } from '../../constants/eventTypes'
 
 /**
  * Converts the passed in message into string into an object
@@ -78,7 +77,7 @@ const callAction = (socketInstance, action, event, message) => {
  * @returns {void}
  */
 export class SocketService {
-  initSocket = (config, dispatch, token) => {
+  initSocket({ config, dispatch }, token) {
     // If the sockets already setup, just return
     if (this.socket) return
 
@@ -86,25 +85,32 @@ export class SocketService {
     this.dispatch = dispatch
 
     // Setup the socket, and connect to the server
-    this.socket = io(buildEndpoint(config), { path: config.paths.socket })
-
+    this.socket = io(buildEndpoint(config.server), {
+      path: get(config, 'server.path'),
+      transports: [ 'websocket', 'polling', 'flashsocket' ],
+    })
     this.addEvents(token)
   }
 
-  addEvents = token => {
+  addEvents(token) {
     if (!this.socket) return
 
-    // // Initial connection to the server through the socket
-    // // Call the onConnection method which will handel authorization
-    // this.socket.on(`connect`, formatEvt(this.onConnection.bind(this, token)))
+    // Initial connection to the server through the socket
+    // Call the onConnection method which will handel authorization
+    this.socket.on(`connect`, formatEvt(this.onConnection.bind(this, token)))
 
-    // // EventTypes.SET_ID is called directly after the Auth token
-    // // You can assume at this point, the user is authorized
-    // this.socket.on(EventTypes.SET_ID, formatEvt(message => {
-    //   onConnected(message)
-    //   setTasks(message)
-    //   setId(message)
-    // }))
+    // EventTypes.SET_ID is called directly after the Auth token
+    // You can assume at this point, the user is authorized
+    this.socket.on(
+      EventTypes.INIT,
+      formatEvt(message => {
+        console.log(`---------- message ----------`)
+        console.log(message)
+        // onConnected(message)
+        // setTasks(message)
+        // setId(message)
+      })
+    )
 
     // // Add / Remove peer users, may be used later
     // this.socket.on(EventTypes.ADD_PEER, formatEvt(addPeer))
@@ -115,6 +121,7 @@ export class SocketService {
 
     // // The event captures the command error output from the server
     // this.socket.on(EventTypes.CMD_ERR, formatEvt(onMessage))
+    this.socket.on(EventTypes.CMD_ERR, callAction())
 
     // // The event captures the command fail output from the server
     // this.socket.on(EventTypes.CMD_FAIL, formatEvt(onFail))
@@ -127,12 +134,12 @@ export class SocketService {
     // ))
   }
 
-  onConnection = token => {
+  onConnection(token, message) {
     // Send the token to the server to be validated
     // this.emit(EventTypes.AUTH_TOKEN, { token: token })
   }
 
-  emit = (type, data) => {
+  emit(type, data) {
     if (!this.socket)
       return console.error(`Socket not connected, cannot emit socket event!`)
 
@@ -146,7 +153,7 @@ export class SocketService {
     this.socket.emit(type, data)
   }
 
-  disconnect = () => {
+  disconnect() {
     if (!this.socket) return console.log(`Socket already disconnected!`)
 
     console.log(`Disconnecting from Socket!`)

@@ -146,7 +146,8 @@ class SocketManager {
   toJsonStr = data => {
     try {
       return JSON.stringify((!isObj(data) && { data }) || data)
-    } catch (err) {
+    }
+    catch (err) {
       logError(err, 'toJsonStr')
       return JSON.stringify({ error: 'Error in SocketManager.toJsonStr' })
     }
@@ -172,9 +173,10 @@ class SocketManager {
       socket && isFunc(socket.emit)
         ? socket.emit(tag, this.toJsonStr(this.buildMessage(data)))
         : console.error(
-            `A Socket with an emit method is required to emit events!`
-          )
-    } catch (err) {
+          `A Socket with an emit method is required to emit events!`
+        )
+    }
+    catch (err) {
       logError(err, 'emit')
     }
   }
@@ -200,7 +202,8 @@ class SocketManager {
         socket.broadcast &&
         isFunc(socket.broadcast.emit) &&
         socket.broadcast.emit(tag, this.toJsonStr(this.buildMessage(data)))
-    } catch (err) {
+    }
+    catch (err) {
       logError(err, 'broadCastAll')
     }
   }
@@ -227,7 +230,8 @@ class SocketManager {
         )
 
       this.socketIo.emit(tag, this.toJsonStr(this.buildMessage(data)))
-    } catch (err) {
+    }
+    catch (err) {
       logError(err, 'emitAll')
     }
   }
@@ -284,7 +288,8 @@ class SocketManager {
         id: socket.id,
         data: { peers: Object.keys(this.peers) },
       })
-    } catch (err) {
+    }
+    catch (err) {
       logError(err, 'setupSocket')
     }
   }
@@ -342,7 +347,8 @@ class SocketManager {
         id: socket.id,
         data: { peers: Object.keys(this.peers) },
       })
-    } catch (err) {
+    }
+    catch (err) {
       logError(err, 'onDisconnect')
       if (isObj(this.peers)) delete this.peers[socket.id]
     }
@@ -356,5 +362,5 @@ const Manager = new SocketManager()
 
 module.exports = {
   Manager,
-  SocketManager
+  SocketManager,
 }

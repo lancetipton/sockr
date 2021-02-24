@@ -1,5 +1,11 @@
 const { EventTypes } = require('../../constants')
-const { get, exists, noOpObj, noPropArr, isEmptyColl } = require('@keg-hub/jsutils')
+const {
+  get,
+  exists,
+  noOpObj,
+  noPropArr,
+  isEmptyColl,
+} = require('@keg-hub/jsutils')
 
 const CWD_REGEX = /^(\-\-)?(location|loc|workdir|cwd)\s/
 
@@ -26,7 +32,7 @@ const shouldFilterMessage = args => {
     ...filters.all,
     ...get(filters, [group], []),
     ...get(filters, [cmd], []),
-    ...get(commands, [group, cmd, 'filters'], []),
+    ...get(commands, [ group, cmd, 'filters' ], []),
   ]
 
   return toFilter.reduce(
@@ -70,16 +76,16 @@ const addConfig = (
   // That means we should call it directly,
   // So just return the array with cmd and params
   // The config command, and script are bypassed
-  if (cmdOverrides.includes(cmd)) return [cmd, params, execOpts, cwd]
+  if (cmdOverrides.includes(cmd)) return [ cmd, params, execOpts, cwd ]
 
   // Add the cmd as the first argument to the script
-  const scriptParams = [cmd, ...params]
+  const scriptParams = [ cmd, ...params ]
 
   // Add the default script to be run
   config.script && scriptParams.unshift(config.script)
 
   // Returns an array with the default command, and updated params
-  return [defCmd, params, execOpts, cwd]
+  return [ defCmd, params, execOpts, cwd ]
 }
 
 /**
@@ -137,7 +143,7 @@ const validateCmd = (message, commands, manager, config) => {
 
   // Find the command from the group and name
   // The group and name are defined in the command.config as parent properties
-  const command = get(commands, [group, name])
+  const command = get(commands, [ group, name ])
 
   // Check if the command is valid, and matches the id that was originally sent to the client
   return !command || command.cmd.indexOf(cmd) !== 0 || !id || id !== command.id
