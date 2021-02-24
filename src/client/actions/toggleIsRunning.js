@@ -1,4 +1,4 @@
-import { EventTypes } from '../../../constants/eventTypes'
+import { EventTypes } from '../../constants/eventTypes'
 
 export const toggleIsRunning = ({ isRunning, name }, { dispatch }) => {
   dispatch({
@@ -6,4 +6,9 @@ export const toggleIsRunning = ({ isRunning, name }, { dispatch }) => {
     isRunning,
     name,
   })
+}
+
+export {
+  toggleIsRunning as cmdEnd,
+  toggleIsRunning as cmdRunning,
 }

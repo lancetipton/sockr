@@ -19,7 +19,7 @@ const isDev = process.env.NODE_ENV === 'development'
  * @returns {Object} sockr model object
  */
 export const WebSocketProvider = props => {
-  const { children, config, initialState, reducer, token } = props
+  const { children, config, initialState, reducer, token, debug } = props
 
   const websocket = useSocketReducer(
     reducer || noOp,
@@ -28,7 +28,7 @@ export const WebSocketProvider = props => {
   )
 
   useEffect(() => {
-    WSService && !WSService.socket && WSService.initSocket(websocket, token)
+    WSService && !WSService.socket && WSService.initSocket(websocket, token, debug)
 
     return () => !isDev && WSService.disconnect()
   }, [])

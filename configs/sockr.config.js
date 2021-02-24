@@ -1,43 +1,37 @@
 const sockrConfig = {
-  socket: {
-    path: '/socket',
-  },
-  process: {},
   groups: {
     default: {
       filters: {},
       commands: {
         development: {
-          /**
-          Add named commands here
+          /** Add named commands here */
           example: {
             "group": "default",
             "icon": "example-icon",
-            "description": "Prints a list of the current directory",
+            "description": "Demo command that prints the current directory",
             "cmd": "ls",
             "params": [
               {
-                "name": "bundle",
+                "name": "demo-string",
                 "withKey": true,
-                "description": "Can find this in Zerista Admin / native_app page. Uses reverse domain name notation. Example => com.zerista.zsales",
+                "description": "Demo string param",
                 "type": "string",
                 "required": true,
                 "value": ""
               },
               {
-                "name": "env",
+                "name": "demo-array",
                 "withKey": true,
-                "description": "API endpoint the app points to. This is usually 'com'",
+                "description": "Demo array param",
                 "type": "array",
                 "required": true,
                 "value": [
-                  "com",
-                  "eu"
+                  "test",
+                  "test-2"
                 ]
               }
             ]
           }
-        */
         },
         production: {},
       },

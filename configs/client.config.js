@@ -1,6 +1,7 @@
-export const config = {
+import { sharedConfig } from './shared.config'
+import { deepMerge } from '@keg-hub/jsutils'
+
+export const config = deepMerge(sharedConfig, {
   // Config settings for the client frontend only
-  endpoint: `0.0.0.0`,
-  port: `5005`,
-  path: '/socket',
-}
+  
+})

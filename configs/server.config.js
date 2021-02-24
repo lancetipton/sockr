@@ -1,10 +1,18 @@
+const path = require('path')
+const { deepMerge, noOpObj } = require('@keg-hub/jsutils')
+const { sharedConfig } = require('./shared.config')
 const { sockrConfig } = require('./sockr.config.js')
-const { deepMerge } = require('@keg-hub/jsutils')
 
-const serverConfig = deepMerge(sockrConfig, {
-  // Config settings for the backend server only
-  socket: {
-    host: '0.0.0.0',
+// Config settings for the backend server only
+const serverConfig = deepMerge(sockrConfig, sharedConfig, {
+  process: {
+    // command: {
+    //   default: '/bin/bash',
+    //   overrides: [],
+    // },
+    // exec: {},
+    // root: process.cwd(),
+    // script: 'path/to/some/script',
   },
 })
 

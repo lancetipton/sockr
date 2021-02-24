@@ -1,4 +1,4 @@
-import { EventTypes } from '../../../constants/eventTypes'
+import { EventTypes } from '../../constants/eventTypes'
 
 export const onMessage = (data, { dispatch }) => {
   return (
@@ -9,4 +9,9 @@ export const onMessage = (data, { dispatch }) => {
       ...data,
     })
   )
+}
+
+export {
+  onMessage as cmdOut,
+  onMessage as cmdErr
 }

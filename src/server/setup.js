@@ -22,6 +22,21 @@ const setupSocketCmds = (Proc, socket, config) => {
 }
 
 /**
+ * @todo - add ability to load custom websocket events
+ * Sets up custom websocket events base on the sockrConfig object
+ * @function
+ * @public
+ * @export
+ * @param {Object} socket - socket.io web-socket object
+ * @param {Object} config - Config for setting up socket including custom events
+ *
+ * @returns {void}
+ */
+const setupSocketEvents = (socket, config) => {
+
+}
+
+/**
  * Initialization method for sockr setup
  * Setups up socket.io on the backend
  * @function
@@ -48,11 +63,15 @@ const sockr = async (server, config) => {
   const Proc = new Process(
     sockrConfig.commands,
     sockrConfig.filters,
-    sockrConfig.config
+    sockrConfig.process
   )
 
   // Setup the socket listener, and add socket commands listener
-  io.on('connection', socket => setupSocketCmds(Proc, socket, sockrConfig))
+  io.on('connection', socket => {
+    setupSocketCmds(Proc, socket, sockrConfig)
+    setupSocketEvents(socket, sockrConfig)
+  })
+
 }
 
 module.exports = {

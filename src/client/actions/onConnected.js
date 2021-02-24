@@ -1,4 +1,4 @@
-import { EventTypes } from '../../../constants/eventTypes'
+import { EventTypes } from '../../constants/eventTypes'
 
 export const onConnected = (__, { dispatch }) => {
   return dispatch({

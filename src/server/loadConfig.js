@@ -10,6 +10,7 @@ const {
   noOpObj,
   deepMerge,
   reduceObj,
+  uuid,
 } = require('@keg-hub/jsutils')
 
 const { SOCKR_CONFIG, SOCKR_CMD_GROUP, NODE_ENV = 'development' } = process.env
@@ -71,12 +72,19 @@ const setupConfig = (configPath, serverConfig) => {
 }
 
 const buildConfig = (customConfig, serverConfig, group, env) => {
-  const config = deepMerge(defServerConfig, customConfig, serverConfig)
+
+  const {
+    path:socketPath,
+    host,
+    port,
+    groups,
+    ...config
+  } = deepMerge(defServerConfig, customConfig, serverConfig)
 
   // Get the commands by group separated by environment
   const { development, production, ...other } = deepMerge(
-    get(config, `groups.default.commands`),
-    get(config, `groups.${group}.commands`)
+    get(groups, `default.commands`),
+    get(groups, `${group}.commands`)
   )
 
   // If in production, only use the production commands
@@ -87,16 +95,17 @@ const buildConfig = (customConfig, serverConfig, group, env) => {
       : deepMerge(other, production, development)
 
   const filters = deepMerge(
-    get(config, `groups.default.filters`),
-    get(config, `groups.${group}.filters`)
+    get(groups, `default.filters`),
+    get(groups, `${group}.filters`)
   )
 
   return {
     ...config,
+    process: config.process,
     socket: {
-      path: get(config, 'socket.path', config.path),
-      host: get(config, 'socket.host', config.host),
-      port: get(config, 'socket.port', config.port),
+      port,
+      host,
+      path: socketPath,
     },
     filters,
     commands: reduceObj(

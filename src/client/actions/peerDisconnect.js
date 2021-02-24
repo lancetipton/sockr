@@ -1,4 +1,4 @@
-import { EventTypes } from '../../../constants/eventTypes'
+import { EventTypes } from '../../constants/eventTypes'
 
 export const peerDisconnect = ({ id, peers }, { dispatch }) => {
   return dispatch({

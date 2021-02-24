@@ -1,5 +1,5 @@
 import { toggleIsRunning } from './toggleIsRunning'
-import { EventTypes } from '../../../constants/eventTypes'
+import { EventTypes } from '../../constants/eventTypes'
 
 export const onFail = (data, service) => {
   return (
@@ -12,4 +12,8 @@ export const onFail = (data, service) => {
   )
 
   toggleIsRunning(data, service)
+}
+
+export {
+  onFail as cmdFail
 }
