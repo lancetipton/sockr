@@ -2,10 +2,15 @@ const { deepFreeze } = require('@keg-hub/jsutils')
 
 const TAG_PREFIX = 'SOCKr'
 
+
 const EventTypes = deepFreeze({
   // General
   INIT: `${TAG_PREFIX}:INIT`,
   SET_ID: `${TAG_PREFIX}:SET_ID`,
+  ON_CONNECTED: `${TAG_PREFIX}:ON_CONNECTED`,
+
+  // STORE
+  UPDATE_STORE: `${TAG_PREFIX}:UPDATE_STORE`,
 
   // Auth
   AUTH_TOKEN: `${TAG_PREFIX}:AUTH_TOKEN`,

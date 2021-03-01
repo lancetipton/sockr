@@ -1,1 +1,1 @@
-export * from './useSocketReducer'
+export * from './useSockrReducer'

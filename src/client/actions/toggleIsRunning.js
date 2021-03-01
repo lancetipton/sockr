@@ -1,7 +1,8 @@
+import { getDispatch } from '../reducer/sockrState'
 import { EventTypes } from '../../constants/eventTypes'
 
-export const toggleIsRunning = ({ isRunning, name }, { dispatch }) => {
-  dispatch({
+export const toggleIsRunning = ({ isRunning, name }) => {
+  getDispatch()({
     type: EventTypes.IS_RUNNING,
     isRunning,
     name,

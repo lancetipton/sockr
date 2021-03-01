@@ -1,4 +1,4 @@
-import { useWebSocket } from './useWebsocket'
+import { useSockr } from '../hooks/useSockr'
 import React from 'react'
 
 /**
@@ -9,7 +9,7 @@ import React from 'react'
  * @param {Object} props
  *
  */
-export const WebSocketHoc = Component => {
-  const websocket = useWebSocket()
+export const SockrHoc = Component => {
+  const websocket = useSockr()
   return props => <Component {...props} websocket={websocket} />
 }

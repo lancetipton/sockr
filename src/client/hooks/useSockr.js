@@ -1,4 +1,4 @@
-import { SocketContext } from './context'
+import { SocketContext } from '../context/context'
 import { useContext } from 'react'
 
 /**
@@ -9,6 +9,6 @@ import { useContext } from 'react'
  *
  * @returns {Object} websocket context object
  */
-export const useWebSocket = () => {
+export const useSockr = () => {
   return useContext(SocketContext)
 }

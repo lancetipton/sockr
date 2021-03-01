@@ -3,7 +3,6 @@ import { checkCall, get, isFunc, noOpObj, camelCase } from '@keg-hub/jsutils'
 import { EventTypes } from '../../constants/eventTypes'
 import * as InternalActions from '../actions'
 
-
 /**
  * Maps EventType constants to internal actions methods
  * I.E. EventType.SET_PEERS === actions.setPeers
@@ -13,12 +12,13 @@ import * as InternalActions from '../actions'
  * @returns {Object} - Mapped event types and actions
  */
 const mapEventsToInternalActions = () => {
-  return Object.keys(EventTypes).reduce((mapped, key) => {
-    const name = camelCase(key)
-    InternalActions[name] && (mapped[key] = InternalActions[name])
-    
-    return mapped
-  }, {})
+  return Object.entries(EventTypes)
+    .reduce((mapped, [key, value]) => {
+      const name = camelCase(key)
+      InternalActions[name] && (mapped[value] = InternalActions[name])
+
+      return mapped
+    }, {})
 }
 
 /**
@@ -95,18 +95,60 @@ const callAction = (instance, event) => {
  */
 export class SocketService {
 
+  /**
+   * Internally managed action for update the sockr state
+   * @memberof SocketService
+   * @type Object
+   * @public
+   *
+   */
   internalActions = mapEventsToInternalActions()
 
-  logData = (...data) => this.logDebug && console.log(...data)
+  /**
+   * Helper to log data when logDebug is true
+   * @memberof SocketService
+   * @type function
+   * @public
+   * @param {*} data - Items to be logged
+   *
+   * @returns {void}
+   */
+  logData = (...data) => {
+    this.logDebug && console.log(...data)
+  }
 
-  logEvent = (event, data) => this.logDebug && console.log(`Socket Event: ${event}`, data)
+  /**
+   * Helper to log events when logDebug is true
+   * @memberof SocketService
+   * @type function
+   * @public
+   * @param {string} event - Websocket event to be logged
+   * @param {*} data - Items to be logged
+   *
+   * @returns {void}
+   */
+  logEvent = (event, ...data) => {
+    this.logDebug && console.log(`Socket Event: ${event}`, ...data)
+  }
 
-  initSocket({ config, dispatch }, token, logDebug=false) {
+  /**
+   * Initializes the web-socket based on the passed in config
+   * Starts initial handshake to connect with the backend
+   * @memberof SocketService
+   * @type function
+   * @public
+   *
+   * @param {Object} config - Options for setting up the websocket
+   * @param {string} token - Auth token for validating with the backend
+   * @param {boolean} logDebug - Should log Socket events as the happen
+   *
+   * @returns {void}
+   */
+  initSocket(config, token, logDebug=false) {
     // If the sockets already setup, just return
     if (this.socket) return
 
     this.config = config
-    this.dispatch = dispatch
     this.logDebug = logDebug
 
     const endpoint = buildEndpoint(config.server)
@@ -122,7 +164,19 @@ export class SocketService {
     this.addEvents(token)
   }
 
-
+  /**
+   * Initializes the web-socket based on the passed in config
+   * Starts initial handshake to connect with the backend
+   * @memberof SocketService
+   * @type Object
+   * @public
+   *
+   * @param {Object} config - Options for setting up the websocket
+   * @param {string} token - Auth token for validating with the backend
+   * @param {boolean} logDebug - Should log Socket events as the happen
+   *
+   * @returns {void}
+   */
   addEvents(token) {
     if (!this.socket) return
 
@@ -153,6 +207,16 @@ export class SocketService {
 
   }
 
+  /**
+   * Callback method called when the websocket connects to the backend
+   * @memberof SocketService
+   * @type function
+   * @public
+   * @param {string} token - Auth token for validating with the backend
+   * @param {Object} data - Content sent from the backend
+   *
+   * @returns {void}
+   */
   onConnection(token, data) {
     this.logData(`Socket Connected`)
 
@@ -161,6 +225,17 @@ export class SocketService {
     // this.emit(EventTypes.AUTH_TOKEN, { token: token })
   }
 
+
+  /**
+   * Sends an event to the connected backend through websocket ( Like an REST API call )
+   * @memberof SocketService
+   * @type function
+   * @public
+   * @param {string} event - Name of the event to emit ( Sent to the backend )
+   * @param {Object} data - Content sent to the backend
+   *
+   * @returns {void}
+   */
   emit(event, data) {
     if (!this.socket)
       return console.error(`Socket not connected, cannot emit socket event!`)
@@ -177,6 +252,15 @@ export class SocketService {
     this.socket.emit(event, data)
   }
 
+  /**
+   * Disconnects from the backend websocket
+   * Cleans up any open object || handles
+   * @memberof SocketService
+   * @type function
+   * @public
+   *
+   * @returns {void}
+   */
   disconnect() {
     if (!this.socket) return this.logData(`Socket already disconnected!`)
 

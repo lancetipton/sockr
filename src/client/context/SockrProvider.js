@@ -2,9 +2,19 @@ import { WSService } from '../service'
 import { SocketContext } from './context'
 import { noOp, noOpObj } from '@keg-hub/jsutils'
 import React, { useEffect } from 'react'
-import { useSocketReducer } from '../reducer/useSocketReducer'
+import { useSockrReducer } from '../reducer/useSockrReducer'
 
 const isDev = process.env.NODE_ENV === 'development'
+
+/**
+ * Component to memoize the children of the context provider
+ * @function
+ * @private
+ * @param {Object} props
+ * @param {function} props.children - Children components passed to the Provider
+ *
+ */
+const MemoChildren = React.memo(props => (<>{props.children}</>))
 
 /**
  * Websocket Provider component. Should wrap a react application as a Provider
@@ -14,19 +24,20 @@ const isDev = process.env.NODE_ENV === 'development'
  * @param {Object} props
  * @param {function} props.reducer - Custom websocket reducer function
  * @param {Object} props.initialState - Custom initial state for the reducer
- * @param {Object} props.config - Websocket config object matching the config spec
  *
  * @returns {Object} sockr model object
  */
-export const WebSocketProvider = props => {
-  const { children, config, initialState, reducer, token, debug } = props
+export const SockrProvider = props => {
+  const { children, initialState, reducer, token, debug } = props
 
-  const websocket = useSocketReducer(
-    reducer || noOp,
+  const websocket = useSockrReducer(
+    reducer,
     initialState || noOpObj,
-    config || noOpObj
   )
 
+  // Only init the websocket on initial render
+  // Don't update the websocket after that
+  // All config values must be setup from the start
   useEffect(() => {
     WSService && !WSService.socket && WSService.initSocket(websocket, token, debug)
 
@@ -35,7 +46,9 @@ export const WebSocketProvider = props => {
 
   return (
     <SocketContext.Provider value={websocket}>
-      <>{children}</>
+      <MemoChildren>
+        {children}
+      </MemoChildren>
     </SocketContext.Provider>
   )
 }
