@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { getState } from '../reducer/sockrState'
-import { get, noPropArr } from '@keg-hub/jsutils'
+import { get, noPropArr, clearObj } from '@keg-hub/jsutils'
 
 /**
  * Hook to extract a single values from the sockr state object
@@ -42,12 +42,17 @@ export const useSockrVals = (statePaths=noPropArr) => {
   // This way the values are only ever updated it it's they changed on that state changed
   // If the state object changes, but not the values, then the original values are returned
   return useMemo(() => {
-    Object.entries(values)
-      .reduce((mapped, [key, value]) => {
-        mapped.current[key] = value
+    // Clear out all keys from the current ref
+    // This also keeps the same identity of the ref object
+    // Which means we should check the children for updates, not the root object
+    clearObj(sockrRef.current)
 
-        return sockrRef
-      }, sockrRef)
+    // Loop the values and add the current values to the ref
+    // This puts back any values we removed in the clearObj method call
+    // If the value never changed, then the ref should have the same value again
+    // But it removes any properties that should not longer exist
+    Object.entries(values)
+      .map(([key, value]) => sockrRef.current[key] = value)
 
     return sockrRef.current
   }, [values, sockrRef && sockrRef.current])
