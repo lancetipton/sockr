@@ -14,7 +14,7 @@ import { get, noPropArr, clearObj } from '@keg-hub/jsutils'
  *
  * @returns {Object} Memoize values from the state
  */
-export const useSockrVals = (statePaths=noPropArr) => {
+export const useSockrItems = (statePaths=noPropArr) => {
 
   // Get the current state to allow pulling the values with statePaths
   const state = getState()

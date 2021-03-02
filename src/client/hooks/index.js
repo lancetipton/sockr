@@ -1,2 +1,2 @@
 export * from './useSockr'
-export * from './useSockrVals'
+export * from './useSockrItems'
