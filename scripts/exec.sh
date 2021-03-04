@@ -4,7 +4,7 @@
 set -e
 
 EXEC_CMD="$1"
-EXEC_ARGS="{@:2}"
+EXEC_ARGS="${@:2}"
 
 # Prints a message to the terminal through stderr
 printMessage(){

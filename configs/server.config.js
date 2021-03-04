@@ -5,15 +5,7 @@ const { sockrConfig } = require('./sockr.config.js')
 
 // Config settings for the backend server only
 const serverConfig = deepMerge(sockrConfig, sharedConfig, {
-  process: {
-    // command: {
-    //   default: '/bin/bash',
-    //   overrides: [],
-    // },
-    // exec: {},
-    // root: process.cwd(),
-    // script: 'path/to/some/script',
-  },
+  process: {},
 })
 
 module.exports = {

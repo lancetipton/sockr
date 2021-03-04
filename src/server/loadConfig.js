@@ -7,6 +7,7 @@ const {
 const {
   isFunc,
   get,
+  set,
   noOpObj,
   noPropArr,
   deepMerge,
@@ -78,6 +79,9 @@ const setupConfig = (configPath, serverConfig) => {
 }
 
 const buildConfig = (customConfig, serverConfig, group, env) => {
+  const addDefConfig = Boolean(!customConfig && !serverConfig)
+  // Extract the groups from the def config, so we don't add the example commands
+  const { groups:defGroups, ...sockrConf } = defServerConfig
 
   const {
     path:socketPath,
@@ -85,7 +89,11 @@ const buildConfig = (customConfig, serverConfig, group, env) => {
     port,
     groups,
     ...config
-  } = deepMerge(defServerConfig, customConfig, serverConfig)
+  } = deepMerge(
+    addDefConfig ? defServerConfig : sockrConf,
+    customConfig,
+    serverConfig
+  )
 
   // Get the commands by group separated by environment
   const { development, production, ...other } = deepMerge(
@@ -105,6 +113,16 @@ const buildConfig = (customConfig, serverConfig, group, env) => {
     get(groups, `${group}.filters`)
   )
 
+  const builtCmds = reduceObj(activeCommands, (command, definition, groups) => {
+    definition.id = uuid()
+    definition.name = definition.name || command
+    definition.group = definition.group || group
+
+    set(groups, [definition.group, command], definition)
+
+    return groups
+  }, {})
+
   return {
     ...config,
     process: config.process,
@@ -114,30 +132,15 @@ const buildConfig = (customConfig, serverConfig, group, env) => {
       path: socketPath,
     },
     filters,
-    commands: reduceObj(
-      activeCommands,
-      (key, value, groups) => {
-        groups[key] = reduceObj(
-          groups[key],
-          (command, options, commands) => {
-            commands[command].id = uuid()
-            return commands
-          },
-          groups[key]
-        )
-
-        return groups
-      },
-      activeCommands
-    ),
+    commands: builtCmds,
   }
 }
 
-const loadConfig = async config => {
+const loadConfig = async (config, cmdGroup) => {
   const { env, configPath, group } = await getConfigPath(config.options)
   const loadedConfig = setupConfig(configPath, config)
 
-  const built = buildConfig(loadedConfig, config, group, env)
+  const built = buildConfig(loadedConfig, config, cmdGroup || group, env)
 
   return built
 }

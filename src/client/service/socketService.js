@@ -1,5 +1,5 @@
 import io from 'socket.io-client'
-import { checkCall, get, isFunc, noOpObj, camelCase, snakeCase } from '@keg-hub/jsutils'
+import { checkCall, get, isFunc, noOpObj, camelCase, snakeCase, isObj } from '@keg-hub/jsutils'
 import { EventTypes, tagPrefix } from '../../constants/eventTypes'
 import * as InternalActions from '../actions'
 
@@ -59,6 +59,11 @@ const callAction = (instance, event, action) => {
     // Log the event for debugging
     instance.logEvent(event, message)
 
+    // Look for the init event, and pull out the commands from it
+    // Init should only happen when we connect to the socket 
+    eventName === 'init' &&
+      (instance.commands = get(message, 'data.commands'))
+
     // Call the default internal action if it exists
     const internal = InternalActions[eventName]
     internal && checkCallEvent(internal, message, instance, event)
@@ -73,6 +78,49 @@ const callAction = (instance, event, action) => {
     allEvent && checkCallEvent(allEvent, message, instance, event)
 
   }
+}
+
+/**
+ * Find the command from the commands ID
+ * Searches through all loaded command, looking for a matching id
+ * Otherwise returns false
+ * @function
+ * @private
+ *
+ * @param {Object} commands - All commands loaded from the back end
+ * @param {Object|string} cmdOrId - Command object or id of the command
+ *
+ * @returns {Object|boolean} - The found command object or false
+ */
+const getCommand = (commands, cmdOrId) => {
+  const cmdId = isObj(cmdOrId) ? cmdOrId.id : cmdOrId
+
+  return Object.entries(commands)
+    .reduce((found, [group, subCmds]) => {
+      return found
+        ? found
+        : Object.entries(subCmds)
+            .reduce((subFound, [name, definition]) => {
+              return !subFound && isObj(definition) && definition.id === cmdId
+                ? definition
+                : subFound
+            }, false)
+    }, false)
+}
+
+/**
+ * Builds the params for the command based on the command param options
+ * @function
+ * @private
+ *
+ * @param {Object} cmd - Command the params belong to
+ * @param {Object} params - Custom params to be built
+ *
+ * @returns {Array} - Built params as an array of strings
+ */
+const buildParams = (cmd, params) => {
+  // TODO build the params for passing to the backend
+  return []
 }
 
 /**
@@ -237,6 +285,28 @@ export class SocketService {
 
     // Send a message to the server
     this.socket.emit(event, data)
+  }
+
+
+  /**
+   * Builds the command to be run, and sends it to the backend
+   * @memberof SocketService
+   * @type function
+   * @public
+   * @param {Object|string} command - Command data used to build the command for the backend
+   *                                  Or the id of the command to be run
+   *
+   * @returns {void}
+   */
+  runCommand(command, params){
+    const { id, cmd, name, group } = getCommand(this.commands, command)
+    return this.emit(EventTypes.RUN_CMD, {
+      id,
+      cmd,
+      name,
+      group,
+      params: buildParams(cmd, params)
+    })
   }
 
   /**

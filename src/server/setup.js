@@ -47,8 +47,8 @@ const setupSocketEvents = (socket, config) => {
  *
  * @returns {void}
  */
-const sockr = async (server, config) => {
-  const sockrConfig = await loadConfig(config)
+const sockr = async (server, config, cmdGroup) => {
+  const sockrConfig = await loadConfig(config, cmdGroup)
 
   // Setup the socket
   const io = SocketIO({ path: sockrConfig.socket.path })

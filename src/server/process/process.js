@@ -4,6 +4,9 @@ const { Manager } = require('../manager')
 const { EventTypes } = require('../../constants')
 const { shouldFilterMessage, validateCmd, addConfig } = require('./helpers')
 const { deepMerge, noOpObj } = require('@keg-hub/jsutils')
+const sockrRoot = path.join(__dirname, `../../../`)
+const appRoot = require('app-root-path').path
+
 
 /**
  * Class for managing child process run from a socket connection
@@ -24,8 +27,8 @@ class Process {
       overrides: [],
     },
     exec: noOpObj,
-    root: process.cwd(),
-    script: path.join(__dirname, `../../../scripts/exec.sh`),
+    root: appRoot,
+    script: path.join(sockrRoot, `./scripts/exec.sh`),
   }
 
   constructor(commands, filters, config) {
@@ -200,14 +203,14 @@ class Process {
       message: 'Running command',
     })
 
-    return exec(
-      ...addConfig(
-        cmd,
-        params,
-        this.config,
-        this.buildEvents(cmd, params, group, name)
-      )
+    const cmdArr = addConfig(
+      cmd,
+      message,
+      this.config,
+      this.buildEvents(cmd, params, group, name)
     )
+
+    return exec(...cmdArr)
   }
 
   /**
@@ -225,21 +228,24 @@ class Process {
     // Disable checking auth for now until injectable auth is setup
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
+      const { name, cmd, id, group } = message
+
       try {
         // Validate the cmd to ensure it is allowed to run
-        const message = validateCmd(
+        const command = validateCmd(
           message,
           this.commands,
           this.manager,
           this.config
         )
 
-        // If a cmd is returned, then run the exec method
-        return cmd && id && this.exec(message)
+        // If a cmd and id is returned, then run the exec method
+        return command.cmd && this.exec(command)
+
       }
       catch (err) {
         console.error(`[ SOCKr CMD ERROR ] - Error running command: ${cmd}`)
-        console.error(e.stack)
+        console.error(err.stack)
 
         this.manager.isRunning = false
         this.manager.emitAll(EventTypes.CMD_RUNNING, {

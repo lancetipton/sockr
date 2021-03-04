@@ -55,15 +55,29 @@ const shouldFilterMessage = args => {
  */
 const addConfig = (
   cmd,
-  params = noPropArr,
+  message,
   config = noOpObj,
   events = noOpObj
 ) => {
+
+  const {
+    afterArgs=noPropArr,
+    beforeArgs=noPropArr,
+    params=noPropArr
+  } = message
+
+  // Add the before and after args to the params
+  const joinedParams = beforeArgs.concat(params.concat(afterArgs))
+
   const defCmd = get(config, 'command.default', '/bin/bash')
   const cmdOverrides = get(config, 'command.overrides', noPropArr)
 
+  // Set the default root or the process working directory for cwd (current working directory)
   let cwd = get(config, 'root', process.cwd())
-  params.map(param => {
+
+  // Search the params to see if there's a location/cwd argument
+  // That should be the actual working directory
+  joinedParams.map(param => {
     // Set the current working directory when a param matches
     CWD_REGEX.test(param.trim()) && (cwd = param.match(CWD_REGEX)[3].trim())
   })
@@ -76,16 +90,16 @@ const addConfig = (
   // That means we should call it directly,
   // So just return the array with cmd and params
   // The config command, and script are bypassed
-  if (cmdOverrides.includes(cmd)) return [ cmd, params, execOpts, cwd ]
+  if (cmdOverrides.includes(cmd)) return [ cmd, joinedParams, execOpts, cwd ]
 
   // Add the cmd as the first argument to the script
-  const scriptParams = [ cmd, ...params ]
+  const cmdAndParams = [ cmd, ...joinedParams ]
 
   // Add the default script to be run
-  config.script && scriptParams.unshift(config.script)
+  config.script && cmdAndParams.unshift(config.script)
 
   // Returns an array with the default command, and updated params
-  return [ defCmd, params, execOpts, cwd ]
+  return [ defCmd, cmdAndParams, execOpts, cwd ]
 }
 
 /**
@@ -134,9 +148,8 @@ const onInvalidCmd = (message, manager) => {
  * @returns {Object} message object is command is valid, or empty object if it is not
  */
 const validateCmd = (message, commands, manager, config) => {
-  // If the allowedCmds array is not set, or it's empty, the ALLOW ALL COMMANDS
+  // If the allowedCmds array is not set, or it's empty, then ALLOW ALL COMMANDS
   // Which means we default to allow any command to be run
-  // This is dangerous, but also allow full customization
   if (!exists(commands) || isEmptyColl(commands)) return message
 
   const { name, cmd, id, group } = message
@@ -146,9 +159,10 @@ const validateCmd = (message, commands, manager, config) => {
   const command = get(commands, [ group, name ])
 
   // Check if the command is valid, and matches the id that was originally sent to the client
+  // If valid merge with the message, to get access to props not sent by the client
   return !command || command.cmd.indexOf(cmd) !== 0 || !id || id !== command.id
     ? onInvalidCmd(message, manager)
-    : message
+    : { ...command, ...message }
 }
 
 module.exports = {
