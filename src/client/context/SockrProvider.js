@@ -1,6 +1,6 @@
 import { WSService } from '../service'
 import { SocketContext } from './context'
-import { noOp, noOpObj } from '@keg-hub/jsutils'
+import { noOpObj } from '@keg-hub/jsutils'
 import React, { useEffect } from 'react'
 import { useSockrReducer } from '../reducer/useSockrReducer'
 
@@ -14,6 +14,7 @@ const isDev = process.env.NODE_ENV === 'development'
  * @param {function} props.children - Children components passed to the Provider
  *
  */
+// eslint-disable-next-line no-unused-vars
 const MemoChildren = React.memo(props => (<>{props.children}</>))
 
 /**
@@ -28,11 +29,11 @@ const MemoChildren = React.memo(props => (<>{props.children}</>))
  * @returns {Object} sockr model object
  */
 export const SockrProvider = props => {
-  const { children, initialState, reducer, token, debug } = props
+  const { children, config, reducer, token, debug } = props
 
   const websocket = useSockrReducer(
     reducer,
-    initialState || noOpObj,
+    config || noOpObj,
   )
 
   // Only init the websocket on initial render

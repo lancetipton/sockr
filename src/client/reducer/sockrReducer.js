@@ -31,7 +31,7 @@ export const sockrReducer = (state=initialState, action) => {
 
   switch (action.type) {
 
-    case EventTypes.ON_CONNECTED: {
+    case EventTypes.CONNECT: {
       return action.connected === state.connected
         ? state
         : {
@@ -50,7 +50,7 @@ export const sockrReducer = (state=initialState, action) => {
           }
     }
 
-    case EventTypes.IS_RUNNING: {
+    case EventTypes.RUNNING: {
       return action.isRunning === state.isRunning
         ? state
         : {

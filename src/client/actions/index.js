@@ -1,6 +1,6 @@
 export * from './addPeer'
 export * from './init'
-export * from './onConnected'
+export * from './connect'
 export * from './onFail'
 export * from './onMessage'
 export * from './peerDisconnect'

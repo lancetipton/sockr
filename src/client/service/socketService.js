@@ -1,25 +1,7 @@
 import io from 'socket.io-client'
-import { checkCall, get, isFunc, noOpObj, camelCase } from '@keg-hub/jsutils'
-import { EventTypes } from '../../constants/eventTypes'
+import { checkCall, get, isFunc, noOpObj, camelCase, snakeCase } from '@keg-hub/jsutils'
+import { EventTypes, tagPrefix } from '../../constants/eventTypes'
 import * as InternalActions from '../actions'
-
-/**
- * Maps EventType constants to internal actions methods
- * I.E. EventType.SET_PEERS === actions.setPeers
- * @function
- * @private
- *
- * @returns {Object} - Mapped event types and actions
- */
-const mapEventsToInternalActions = () => {
-  return Object.entries(EventTypes)
-    .reduce((mapped, [key, value]) => {
-      const name = camelCase(key)
-      InternalActions[name] && (mapped[value] = InternalActions[name])
-
-      return mapped
-    }, {})
-}
 
 /**
  * Builds the websocket endpoint to connect to the backend websocket
@@ -31,8 +13,9 @@ const mapEventsToInternalActions = () => {
  * @returns {string} - Built websocket endpoint
  */
 const buildEndpoint = config => {
-  // TODO: update to get the current http protocol from window.location
-  return config.port ? `http://${config.host}:${config.port}` : config.host
+  // Use the same http protocol as what the current window is using
+  const protocol = get(window, 'location.protocol', 'https:')
+  return config.port ? `${protocol}//${config.host}:${config.port}` : config.host
 }
 
 /**
@@ -63,21 +46,31 @@ const checkCallEvent = (action, message, instance, event) => {
  *
  * @returns {void}
  */
-const callAction = (instance, event) => {
+const callAction = (instance, event, action) => {
+  const eventName = camelCase((event.split(':')[1] || '').toLowerCase())
+
   return data => {
+    if(!eventName)
+      return instance.logData(`Invalid event name!`, event)
+
     // Parse the data from string to object
-    const message = JSON.parse(data)
+    const message = data && JSON.parse(data)
 
     // Log the event for debugging
     instance.logEvent(event, message)
 
     // Call the default internal action if it exists
-    const action = instance.internalActions[event]
-    action && checkCallEvent(action, message, instance, event)
+    const internal = InternalActions[eventName]
+    internal && checkCallEvent(internal, message, instance, event)
 
     // Call the custom action if it exists
-    const customAction = get(instance.config, `actions.${event}`)
-    customAction && checkCallEvent(customAction, message, instance, event)
+    const customEvent = get(instance.config, `events.${eventName}`)
+    customEvent && checkCallEvent(customEvent, message, instance, event)
+
+    // Call the all action if it exists
+    // Is called for all sockr events that happen on the frontend
+    const allEvent = get(instance.config, `events.all`)
+    allEvent && checkCallEvent(allEvent, message, instance, event)
 
   }
 }
@@ -94,15 +87,6 @@ const callAction = (instance, event) => {
  * @returns {void}
  */
 export class SocketService {
-
-  /**
-   * Internally managed action for update the sockr state
-   * @memberof SocketService
-   * @type Object
-   * @public
-   *
-   */
-  internalActions = mapEventsToInternalActions()
 
   /**
    * Helper to log data when logDebug is true
@@ -187,18 +171,20 @@ export class SocketService {
     // Get called within the callAction of the registered internal event
     Object.entries(get(this.config, 'events', noOpObj))
       .map(([ name, action ]) => {
-        const eventType = name.toUpperCase()
+        const namCaps = snakeCase(name).toUpperCase()
+        if(namCaps === 'ALL') return
+
+        const eventType = `${tagPrefix}:${namCaps}`
 
         isFunc(action) &&
-          !EventTypes[eventType] &&
-          this.socket.on(eventType, callAction(this, eventType, action))
+          !EventTypes[namCaps] &&
+          this.socket.on(eventType, callAction(this, eventType))
       })
 
-    // Map internal events and actions after the custom events
-    // We want to make sure the internalActions are always called
-    Object.entries(this.internalActions)
-      .map(([eventType, action]) => (
-        this.socket.on(eventType, callAction(this, eventType, action))
+    // Socket Map Event types to internal actions
+    Object.entries(EventTypes)
+      .map(([key, eventType]) => (
+        this.socket.on(eventType, callAction(this, eventType))
       ))
 
     // Initial connection to the server through the socket
@@ -218,11 +204,12 @@ export class SocketService {
    * @returns {void}
    */
   onConnection(token, data) {
-    this.logData(`Socket Connected`)
-
     // TODO: Implement token auth
     // Send the token to the server to be validated
     // this.emit(EventTypes.AUTH_TOKEN, { token: token })
+    // Then call the `callAction` with the connected event args
+    const connectAction = callAction(this, `${tagPrefix}:CONNECT`)
+    connectAction(data)
   }
 
 

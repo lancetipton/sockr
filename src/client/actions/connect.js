@@ -1,9 +1,9 @@
 import { getDispatch } from '../reducer/sockrState'
 import { EventTypes } from '../../constants/eventTypes'
 
-export const onConnected = () => {
+export const connect = () => {
   return getDispatch()({
-    type: EventTypes.ON_CONNECTED,
+    type: EventTypes.CONNECT,
     connected: true,
   })
 }

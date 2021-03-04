@@ -7,7 +7,7 @@ const EventTypes = deepFreeze({
   // General
   INIT: `${TAG_PREFIX}:INIT`,
   SET_ID: `${TAG_PREFIX}:SET_ID`,
-  ON_CONNECTED: `${TAG_PREFIX}:ON_CONNECTED`,
+  CONNECT: `${TAG_PREFIX}:CONNECT`,
 
   // STORE
   UPDATE_STORE: `${TAG_PREFIX}:UPDATE_STORE`,
@@ -31,4 +31,5 @@ const EventTypes = deepFreeze({
 
 module.exports = {
   EventTypes,
+  tagPrefix: TAG_PREFIX,
 }

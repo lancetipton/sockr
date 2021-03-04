@@ -4,13 +4,16 @@ import cleanup from 'rollup-plugin-cleanup'
 import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
 import { join } from 'path'
+import { exec } from 'child_process'
+import { promisify } from 'util'
+const cmdExec = promisify(exec)
 
 const { DOC_APP_PATH } = process.env
-const clientOutputDir = Boolean(DOC_APP_PATH)
-  ? join(
-      __dirname,
-      `../../../../../node_modules/@ltipton/sockr/build/client/esm`
-    )
+const inDocker = Boolean(DOC_APP_PATH)
+
+const workSpaceSockr = join(__dirname, `../../../node_modules/@ltipton/sockr`)
+const clientOutputDir = inDocker
+  ? join(workSpaceSockr, `build/client/esm`)
   : 'build/client/esm'
 
 const shared = config => {

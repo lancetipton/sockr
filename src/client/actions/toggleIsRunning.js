@@ -3,7 +3,7 @@ import { EventTypes } from '../../constants/eventTypes'
 
 export const toggleIsRunning = ({ isRunning, name }) => {
   getDispatch()({
-    type: EventTypes.IS_RUNNING,
+    type: EventTypes.RUNNING,
     isRunning,
     name,
   })
