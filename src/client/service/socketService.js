@@ -84,7 +84,7 @@ const callAction = (instance, event, action) => {
  * @param {function} dispatch - Method to be called to update the websocket state
  * @param {string} token - Auth token for connecting to the websocket
  *
- * @returns {void}
+ * @returns {Object} - Instance of SocketService
  */
 export class SocketService {
 
@@ -97,7 +97,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  logData = (...data) => {
+  logData(...data){
     this.logDebug && console.log(...data)
   }
 
@@ -111,7 +111,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  logEvent = (event, ...data) => {
+  logEvent(event, ...data){
     this.logDebug && console.log(`Socket Event: ${event}`, ...data)
   }
 
@@ -212,7 +212,6 @@ export class SocketService {
     connectAction(data)
   }
 
-
   /**
    * Sends an event to the connected backend through websocket ( Like an REST API call )
    * @memberof SocketService
@@ -223,7 +222,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  emit(event, data) {
+  emit = (event, data) => {
     if (!this.socket)
       return console.error(`Socket not connected, cannot emit socket event!`)
 
@@ -248,7 +247,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  disconnect() {
+  disconnect = () => {
     if (!this.socket) return this.logData(`Socket already disconnected!`)
 
     this.logData(`Disconnecting from Socket!`)

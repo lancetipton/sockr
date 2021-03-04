@@ -2,7 +2,7 @@ import { useReducer, useMemo } from 'react'
 import { sockrReducer } from './sockrReducer'
 import { joinReducers }  from './joinReducers'
 import { isFunc, deepMerge } from '@keg-hub/jsutils'
-import { setNextState, setDispatch } from './sockrState'
+import { getDispatch, getState, setNextState, setDispatch } from './sockrState'
 
 /**
  * Call the sockr reducer to get the initial state
@@ -27,24 +27,17 @@ setNextState(initialState)
 export const useSockrReducer = (customReducer, customInitialState) => {
 
   // Join the reducers if a custom reducer is passed in
-  const socketReducer = isFunc(customReducer)
-    ? joinReducers(sockrReducer, customReducer)
-    : sockrReducer
-
-  // Build the reducers with the joined default state and custom state
-  const [ state, dispatch ] = useReducer(
-    socketReducer,
+  // And build the reducers with the joined default state and custom state
+  const [state, dispatch] = useReducer(
+    joinReducers(sockrReducer, customReducer),
     deepMerge(initialState, customInitialState)
   )
 
-  // Memoize setting the next sate to the state object
-  // This way we don't update any listeners when there's not change
-  useMemo(() => setNextState(state), [state])
+  // Update the internal state so we can keep track of it
+  getState() !== state && setNextState(state)
 
-  // Memoize setting the dispatch method
-  // Technically the dispatch method should not change
-  // This ensures we only update if it does
-  useMemo(() => setDispatch(dispatch), [dispatch])
+  // Technically the dispatch method should never change, so no need to memoize
+  getDispatch() !== dispatch && setDispatch(dispatch)
 
   return state
 }
