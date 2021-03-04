@@ -129,19 +129,20 @@ export class SocketService {
    * @returns {void}
    */
   initSocket(config, token, logDebug=false) {
+
     // If the sockets already setup, just return
     if (this.socket) return
 
     this.config = config
     this.logDebug = logDebug
 
-    const endpoint = buildEndpoint(config.server)
-    const socketPath = get(config, 'server.path')
-    this.logData(`Connecting to backend socket => ${endpoint}${socketPath}`)
+    const endpoint = buildEndpoint(config)
+
+    this.logData(`Connecting to backend socket => ${endpoint}${config.path}`)
 
     // Setup the socket, and connect to the server
     this.socket = io(endpoint, {
-      path: socketPath,
+      path: config.path,
       transports: [ 'websocket', 'polling', 'flashsocket' ],
     })
 

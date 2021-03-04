@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { getState } from '../reducer/sockrState'
-import { get, noPropArr, clearObj } from '@keg-hub/jsutils'
+import { get, noPropArr, clearObj, eitherArr } from '@keg-hub/jsutils'
 
 /**
  * Hook to extract a single values from the sockr state object
@@ -14,7 +14,9 @@ import { get, noPropArr, clearObj } from '@keg-hub/jsutils'
  *
  * @returns {Object} Memoize values from the state
  */
-export const useSockrItems = (statePaths=noPropArr) => {
+export const useSockrItems = (findPaths=noPropArr) => {
+  // Ensure we have an array to call reduce on
+  const statePaths = eitherArr(findPaths, [findPaths])
 
   // Get the current state to allow pulling the values with statePaths
   const state = getState()

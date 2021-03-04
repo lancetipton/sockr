@@ -78,17 +78,6 @@ export const sockrReducer = (state=initialState, action) => {
           }
     }
 
-    case EventTypes.UPDATE_STORE: {
-      const actionKeys = Object.keys(action)
-      const keyUpdate = actionKeys.includes('key') && actionKeys.includes('value')
-    
-      return !keyUpdate && !isObj(action.config)
-        ? state
-        : keyUpdate
-          ? { ...state, [action.key]: action.value }
-          : { ...state, ...(action.config || noOpObj) }
-    }
-
     default: {
       return state
     }

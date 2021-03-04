@@ -7,13 +7,9 @@ import { EventTypes } from '../../constants/eventTypes'
  *
  * @returns {void}
  */
-export const setCmds = (data) => {
-  console.log(`---------- data ----------`)
-  console.log(data)
-
-  // return getDispatch()({
-  //   type: EventTypes.ADD_PEER,
-  // })
-
-  // TODO: the the allow tasks the can be run
+export const setCmds = ({ data: { commands } }) => {
+  return getDispatch()({
+    commands,
+    type: EventTypes.SET_CMDS,
+  })
 }

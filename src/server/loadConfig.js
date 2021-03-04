@@ -8,6 +8,7 @@ const {
   isFunc,
   get,
   noOpObj,
+  noPropArr,
   deepMerge,
   reduceObj,
   uuid,
@@ -36,8 +37,13 @@ const task = {
   },
 }
 
-const getConfigPath = async () => {
-  const args = process.argv.slice(2)
+const getConfigPath = async (options=noOpObj) => {
+  const args = Object.entries(options)
+    .reduce((optArr, [key, value]) => {
+      optArr.push(`${key}=${value}`)
+      return optArr
+    }, process.argv.slice(2))
+
   const { config, env, group } = await argsParse({ args, task })
 
   return {
@@ -128,10 +134,12 @@ const buildConfig = (customConfig, serverConfig, group, env) => {
 }
 
 const loadConfig = async config => {
-  const { env, configPath, group } = await getConfigPath()
+  const { env, configPath, group } = await getConfigPath(config.options)
   const loadedConfig = setupConfig(configPath, config)
 
-  return buildConfig(loadedConfig, config, group, env)
+  const built = buildConfig(loadedConfig, config, group, env)
+
+  return built
 }
 
 module.exports = {
