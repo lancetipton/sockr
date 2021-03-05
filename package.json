@@ -26,6 +26,7 @@
     "src/server",
     "configs/client.config",
     "configs/server.config.js",
+    "configs/shared.config.js",
     "configs/sockr.config.js"
   ],
   "engines": {
