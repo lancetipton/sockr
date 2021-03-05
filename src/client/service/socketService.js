@@ -125,7 +125,7 @@ const getCommand = (commands, cmdOrId) => {
  */
 const buildParams = (cmd, params) => {
   // TODO build the params for passing to the backend
-  return []
+  return params
 }
 
 /**
@@ -306,7 +306,7 @@ export class SocketService {
       cmd,
       name,
       group,
-      params: buildParams(cmd, params),
+      params,
     })
   }
 

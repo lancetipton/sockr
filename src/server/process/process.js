@@ -244,6 +244,8 @@ class Process {
           this.manager,
           this.config
         )
+        // Set the params to be the passed in params
+        command.params = message.params
 
         // If a cmd and id is returned, then run the exec method
         return command.cmd && this.exec(command)
