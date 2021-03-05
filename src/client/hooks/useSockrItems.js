@@ -14,7 +14,7 @@ import { get, noPropArr, clearObj, eitherArr } from '@keg-hub/jsutils'
  *
  * @returns {Object} Memoize values from the state
  */
-export const useSockrItems = (findPaths=noPropArr) => {
+export const useSockrItems = (findPaths = noPropArr) => {
   // Ensure we have an array to call reduce on
   const statePaths = eitherArr(findPaths, [findPaths])
 
@@ -53,10 +53,10 @@ export const useSockrItems = (findPaths=noPropArr) => {
     // This puts back any values we removed in the clearObj method call
     // If the value never changed, then the ref should have the same value again
     // But it removes any properties that should not longer exist
-    Object.entries(values)
-      .map(([key, value]) => sockrRef.current[key] = value)
+    Object.entries(values).map(
+      ([ key, value ]) => (sockrRef.current[key] = value)
+    )
 
     return sockrRef.current
-  }, [values, sockrRef && sockrRef.current])
-
+  }, [ values, sockrRef && sockrRef.current ])
 }

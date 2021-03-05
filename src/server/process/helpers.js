@@ -24,15 +24,15 @@ const CWD_REGEX = /^(\-\-)?(location|loc|workdir|cwd)\s/
  * @returns {boolean} True if the message should be filtered
  */
 const shouldFilterMessage = args => {
-  const { filters, data, group, cmd, commands } = args
+  const { filters = noOpObj, data, group, cmd, commands = noOpObj } = args
 
   if (!exists(data) || data === '') return true
 
   const toFilter = [
-    ...filters.all,
-    ...get(filters, [group], []),
-    ...get(filters, [cmd], []),
-    ...get(commands, [ group, cmd, 'filters' ], []),
+    ...(filters && (filters.all || noPropArr)),
+    ...get(filters, [group], noPropArr),
+    ...get(filters, [cmd], noPropArr),
+    ...get(commands, [ group, cmd, 'filters' ], noPropArr),
   ]
 
   return toFilter.reduce(
@@ -53,17 +53,11 @@ const shouldFilterMessage = args => {
  *
  * @returns {Array} Arguments to pass to the child exec method
  */
-const addConfig = (
-  cmd,
-  message,
-  config = noOpObj,
-  events = noOpObj
-) => {
-
+const addConfig = (cmd, message, config = noOpObj, events = noOpObj) => {
   const {
-    afterArgs=noPropArr,
-    beforeArgs=noPropArr,
-    params=noPropArr
+    afterArgs = noPropArr,
+    beforeArgs = noPropArr,
+    params = noPropArr,
   } = message
 
   // Add the before and after args to the params
@@ -82,15 +76,12 @@ const addConfig = (
     CWD_REGEX.test(param.trim()) && (cwd = param.match(CWD_REGEX)[3].trim())
   })
 
-  // Add the callback events to the exec options
-  // This allows us to capture the commands output
-  const execOpts = { ...config.exec, ...events }
-
   // If the command is in the overrides
   // That means we should call it directly,
   // So just return the array with cmd and params
   // The config command, and script are bypassed
-  if (cmdOverrides.includes(cmd)) return [ cmd, joinedParams, execOpts, cwd ]
+  if (cmdOverrides.includes(cmd))
+    return [ cmd, joinedParams, config.exec, events, cwd ]
 
   // Add the cmd as the first argument to the script
   const cmdAndParams = [ cmd, ...joinedParams ]
@@ -99,7 +90,7 @@ const addConfig = (
   config.script && cmdAndParams.unshift(config.script)
 
   // Returns an array with the default command, and updated params
-  return [ defCmd, cmdAndParams, execOpts, cwd ]
+  return [ defCmd, cmdAndParams, config.exec, events, cwd ]
 }
 
 /**

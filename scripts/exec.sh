@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit when any command fails
-set -e
+# set -e
 
 EXEC_CMD="$1"
 EXEC_ARGS="${@:2}"
@@ -41,7 +41,11 @@ sourceRCFile(){
 
 # Runs a command based on the passed in arguments
 execCmd(){
-  $EXEC_CMD $EXEC_ARGS
+  # $EXEC_CMD $EXEC_ARGS
+  echo "-------- EXEC_ARGS --------"
+  echo "$EXEC_ARGS"
+  
+  exit "$?"
 }
 
 # Add the bash settings for the environment

@@ -2,7 +2,7 @@ import { getDispatch } from '../reducer/sockrState'
 import { EventTypes } from '../../constants/eventTypes'
 
 /**
- * Dispatches a connected peers id 
+ * Dispatches a connected peers id
  * @param {Object} id - Id of the peer that has connected
  * @param {Array} peers - Currently connected peers
  *

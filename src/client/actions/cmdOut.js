@@ -7,16 +7,11 @@ import { EventTypes } from '../../constants/eventTypes'
  *
  * @returns {void}
  */
-export const onMessage = data => {
+export const cmdOut = data => {
   data &&
     data.message &&
     getDispatch()({
-      type: EventTypes.ON_MESSAGE,
+      type: EventTypes.CMD_OUT,
       ...data,
     })
-}
-
-export {
-  onMessage as cmdOut,
-  onMessage as cmdErr
 }

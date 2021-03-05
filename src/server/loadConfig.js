@@ -9,7 +9,6 @@ const {
   get,
   set,
   noOpObj,
-  noPropArr,
   deepMerge,
   reduceObj,
   uuid,
@@ -38,12 +37,11 @@ const task = {
   },
 }
 
-const getConfigPath = async (options=noOpObj) => {
-  const args = Object.entries(options)
-    .reduce((optArr, [key, value]) => {
-      optArr.push(`${key}=${value}`)
-      return optArr
-    }, process.argv.slice(2))
+const getConfigPath = async (options = noOpObj) => {
+  const args = Object.entries(options).reduce((optArr, [ key, value ]) => {
+    optArr.push(`${key}=${value}`)
+    return optArr
+  }, process.argv.slice(2))
 
   const { config, env, group } = await argsParse({ args, task })
 
@@ -81,15 +79,9 @@ const setupConfig = (configPath, serverConfig) => {
 const buildConfig = (customConfig, serverConfig, group, env) => {
   const addDefConfig = Boolean(!customConfig && !serverConfig)
   // Extract the groups from the def config, so we don't add the example commands
-  const { groups:defGroups, ...sockrConf } = defServerConfig
+  const { groups: defGroups, ...sockrConf } = defServerConfig
 
-  const {
-    path:socketPath,
-    host,
-    port,
-    groups,
-    ...config
-  } = deepMerge(
+  const { path: socketPath, host, port, groups, ...config } = deepMerge(
     addDefConfig ? defServerConfig : sockrConf,
     customConfig,
     serverConfig
@@ -113,15 +105,19 @@ const buildConfig = (customConfig, serverConfig, group, env) => {
     get(groups, `${group}.filters`)
   )
 
-  const builtCmds = reduceObj(activeCommands, (command, definition, groups) => {
-    definition.id = uuid()
-    definition.name = definition.name || command
-    definition.group = definition.group || group
+  const builtCmds = reduceObj(
+    activeCommands,
+    (command, definition, groups) => {
+      definition.id = uuid()
+      definition.name = definition.name || command
+      definition.group = definition.group || group
 
-    set(groups, [definition.group, command], definition)
+      set(groups, [ definition.group, command ], definition)
 
-    return groups
-  }, {})
+      return groups
+    },
+    {}
+  )
 
   return {
     ...config,

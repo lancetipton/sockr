@@ -17,7 +17,6 @@
     "sockr"
   ],
   "license": "MIT",
-  "private": true,
   "publishConfig": {
     "access": "public"
   },
@@ -68,7 +67,7 @@
     "@babel/preset-env": "7.12.1",
     "@babel/preset-react": "7.12.1",
     "@babel/runtime": "7.12.1",
-    "@keg-hub/jsutils": "8.2.0",
+    "@keg-hub/jsutils": "8.3.0",
     "@rollup/plugin-babel": "5.2.3",
     "@rollup/plugin-commonjs": "11.0.2",
     "@rollup/plugin-node-resolve": "7.1.1",

@@ -2,7 +2,6 @@ const { deepFreeze } = require('@keg-hub/jsutils')
 
 const TAG_PREFIX = 'SOCKr'
 
-
 const EventTypes = deepFreeze({
   // General
   INIT: `${TAG_PREFIX}:INIT`,

@@ -5,5 +5,5 @@ const sharedConfig = {
 }
 
 module.exports = {
-  sharedConfig
+  sharedConfig,
 }

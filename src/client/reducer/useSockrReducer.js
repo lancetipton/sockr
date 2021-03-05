@@ -1,7 +1,7 @@
-import { useReducer, useMemo } from 'react'
+import { useReducer } from 'react'
 import { sockrReducer } from './sockrReducer'
-import { joinReducers }  from './joinReducers'
-import { isFunc, deepMerge } from '@keg-hub/jsutils'
+import { joinReducers } from './joinReducers'
+import { deepMerge } from '@keg-hub/jsutils'
 import { getDispatch, getState, setNextState, setDispatch } from './sockrState'
 
 /**
@@ -25,10 +25,9 @@ setNextState(initialState)
  * @returns {function} Single reducer function
  */
 export const useSockrReducer = (customReducer, customInitialState) => {
-
   // Join the reducers if a custom reducer is passed in
   // And build the reducers with the joined default state and custom state
-  const [state, dispatch] = useReducer(
+  const [ state, dispatch ] = useReducer(
     joinReducers(sockrReducer, customReducer),
     deepMerge(initialState, customInitialState)
   )
@@ -41,4 +40,3 @@ export const useSockrReducer = (customReducer, customInitialState) => {
 
   return state
 }
-

@@ -9,7 +9,7 @@ import { setCmds } from './setCmds'
  *
  * @returns {void}
  */
-export const init = (data=noOpObj, service=noOpObj) => {
+export const init = (data = noOpObj, service = noOpObj) => {
   setCmds(data, service)
   setId(data, service)
 }

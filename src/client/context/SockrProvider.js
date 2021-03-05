@@ -15,7 +15,7 @@ const isDev = process.env.NODE_ENV === 'development'
  *
  */
 // eslint-disable-next-line no-unused-vars
-const MemoChildren = React.memo(props => (<>{props.children}</>))
+const MemoChildren = React.memo(props => <>{props.children}</>)
 
 /**
  * Websocket Provider component. Should wrap a react application as a Provider
@@ -31,25 +31,22 @@ const MemoChildren = React.memo(props => (<>{props.children}</>))
 export const SockrProvider = props => {
   const { children, config, reducer, token, debug } = props
 
-  const websocket = useSockrReducer(
-    reducer,
-    config || noOpObj,
-  )
+  const websocket = useSockrReducer(reducer, config || noOpObj)
 
   // Only init the websocket on initial render
   // Don't update the websocket after that
   // All config values must be setup from the start
   useEffect(() => {
-    WSService && !WSService.socket && WSService.initSocket(websocket, token, debug)
+    WSService &&
+      !WSService.socket &&
+      WSService.initSocket(websocket, token, debug)
 
     return () => !isDev && WSService.disconnect()
   }, [])
 
   return (
     <SocketContext.Provider value={websocket}>
-      <MemoChildren>
-        {children}
-      </MemoChildren>
+      <MemoChildren>{children}</MemoChildren>
     </SocketContext.Provider>
   )
 }

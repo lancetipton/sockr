@@ -1,5 +1,13 @@
 import io from 'socket.io-client'
-import { checkCall, get, isFunc, noOpObj, camelCase, snakeCase, isObj } from '@keg-hub/jsutils'
+import {
+  checkCall,
+  get,
+  isFunc,
+  noOpObj,
+  camelCase,
+  snakeCase,
+  isObj,
+} from '@keg-hub/jsutils'
 import { EventTypes, tagPrefix } from '../../constants/eventTypes'
 import * as InternalActions from '../actions'
 
@@ -15,7 +23,9 @@ import * as InternalActions from '../actions'
 const buildEndpoint = config => {
   // Use the same http protocol as what the current window is using
   const protocol = get(window, 'location.protocol', 'https:')
-  return config.port ? `${protocol}//${config.host}:${config.port}` : config.host
+  return config.port
+    ? `${protocol}//${config.host}:${config.port}`
+    : config.host
 }
 
 /**
@@ -50,8 +60,7 @@ const callAction = (instance, event, action) => {
   const eventName = camelCase((event.split(':')[1] || '').toLowerCase())
 
   return data => {
-    if(!eventName)
-      return instance.logData(`Invalid event name!`, event)
+    if (!eventName) return instance.logData(`Invalid event name!`, event)
 
     // Parse the data from string to object
     const message = data && JSON.parse(data)
@@ -60,9 +69,8 @@ const callAction = (instance, event, action) => {
     instance.logEvent(event, message)
 
     // Look for the init event, and pull out the commands from it
-    // Init should only happen when we connect to the socket 
-    eventName === 'init' &&
-      (instance.commands = get(message, 'data.commands'))
+    // Init should only happen when we connect to the socket
+    eventName === 'init' && (instance.commands = get(message, 'data.commands'))
 
     // Call the default internal action if it exists
     const internal = InternalActions[eventName]
@@ -76,7 +84,6 @@ const callAction = (instance, event, action) => {
     // Is called for all sockr events that happen on the frontend
     const allEvent = get(instance.config, `events.all`)
     allEvent && checkCallEvent(allEvent, message, instance, event)
-
   }
 }
 
@@ -95,17 +102,15 @@ const callAction = (instance, event, action) => {
 const getCommand = (commands, cmdOrId) => {
   const cmdId = isObj(cmdOrId) ? cmdOrId.id : cmdOrId
 
-  return Object.entries(commands)
-    .reduce((found, [group, subCmds]) => {
-      return found
-        ? found
-        : Object.entries(subCmds)
-            .reduce((subFound, [name, definition]) => {
-              return !subFound && isObj(definition) && definition.id === cmdId
-                ? definition
-                : subFound
-            }, false)
-    }, false)
+  return Object.entries(commands).reduce((found, [ group, subCmds ]) => {
+    return found
+      ? found
+      : Object.entries(subCmds).reduce((subFound, [ name, definition ]) => {
+        return !subFound && isObj(definition) && definition.id === cmdId
+          ? definition
+          : subFound
+      }, false)
+  }, false)
 }
 
 /**
@@ -135,7 +140,6 @@ const buildParams = (cmd, params) => {
  * @returns {Object} - Instance of SocketService
  */
 export class SocketService {
-
   /**
    * Helper to log data when logDebug is true
    * @memberof SocketService
@@ -145,7 +149,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  logData(...data){
+  logData(...data) {
     this.logDebug && console.log(...data)
   }
 
@@ -159,7 +163,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  logEvent(event, ...data){
+  logEvent(event, ...data) {
     this.logDebug && console.log(`Socket Event: ${event}`, ...data)
   }
 
@@ -176,8 +180,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  initSocket(config, token, logDebug=false) {
-
+  initSocket(config, token, logDebug = false) {
     // If the sockets already setup, just return
     if (this.socket) return
 
@@ -218,28 +221,27 @@ export class SocketService {
     // Skip if an event type matching an internal event
     // Custom event types with the same name as internal event
     // Get called within the callAction of the registered internal event
-    Object.entries(get(this.config, 'events', noOpObj))
-      .map(([ name, action ]) => {
+    Object.entries(get(this.config, 'events', noOpObj)).map(
+      ([ name, action ]) => {
         const namCaps = snakeCase(name).toUpperCase()
-        if(namCaps === 'ALL') return
+        if (namCaps === 'ALL') return
 
         const eventType = `${tagPrefix}:${namCaps}`
 
         isFunc(action) &&
           !EventTypes[namCaps] &&
           this.socket.on(eventType, callAction(this, eventType))
-      })
+      }
+    )
 
     // Socket Map Event types to internal actions
-    Object.entries(EventTypes)
-      .map(([key, eventType]) => (
-        this.socket.on(eventType, callAction(this, eventType))
-      ))
+    Object.entries(EventTypes).map(([ key, eventType ]) => {
+      this.socket.on(eventType, callAction(this, eventType))
+    })
 
     // Initial connection to the server through the socket
     // Call the onConnection method which will handel authorization
     this.socket.on(`connect`, this.onConnection.bind(this, token))
-
   }
 
   /**
@@ -287,7 +289,6 @@ export class SocketService {
     this.socket.emit(event, data)
   }
 
-
   /**
    * Builds the command to be run, and sends it to the backend
    * @memberof SocketService
@@ -298,14 +299,14 @@ export class SocketService {
    *
    * @returns {void}
    */
-  runCommand(command, params){
+  runCommand(command, params) {
     const { id, cmd, name, group } = getCommand(this.commands, command)
     return this.emit(EventTypes.RUN_CMD, {
       id,
       cmd,
       name,
       group,
-      params: buildParams(cmd, params)
+      params: buildParams(cmd, params),
     })
   }
 
