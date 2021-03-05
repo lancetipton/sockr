@@ -14,7 +14,8 @@ let _SOCKR_STATE
  *
  * @returns {void}
  */
-let _SOCKR_DISPATCH = () => console.warn(`Sockr Dispatch has not been initialized!`)
+let _SOCKR_DISPATCH = () =>
+  console.warn(`Sockr Dispatch has not been initialized!`)
 
 /**
  * Helper to get the sockrDispatch method

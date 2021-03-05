@@ -7,7 +7,6 @@ const { deepMerge, noOpObj } = require('@keg-hub/jsutils')
 const sockrRoot = path.join(__dirname, `../../../`)
 const appRoot = require('app-root-path').path
 
-
 /**
  * Class for managing child process run from a socket connection
  * Captures the child process output, and forwards them to the connected sockets
@@ -75,13 +74,14 @@ class Process {
    * @returns {void}
    */
   stdOutEmit = (data, cmd, group, name) => {
-    !this.filterMessage(data, cmd, group, name) && (() => {
-      this.manager.emitAll(EventTypes.CMD_OUT, {
-        name,
-        group,
-        message: data,
-      })
-    })()
+    !this.filterMessage(data, cmd, group, name) &&
+      (() => {
+        this.manager.emitAll(EventTypes.CMD_OUT, {
+          name,
+          group,
+          message: data,
+        })
+      })()
   }
 
   /**
@@ -108,7 +108,6 @@ class Process {
         message: data,
       })
   }
-
 
   /**
    * Callback called when child process exits
@@ -218,7 +217,6 @@ class Process {
     )
 
     exec(this.config, ...cmdArr)
-
   }
 
   /**
@@ -236,7 +234,7 @@ class Process {
     // Disable checking auth for now until injectable auth is setup
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
-      const { name, cmd, id, group } = message
+      const { name, cmd, group } = message
 
       try {
         // Validate the cmd to ensure it is allowed to run
@@ -249,7 +247,6 @@ class Process {
 
         // If a cmd and id is returned, then run the exec method
         return command.cmd && this.exec(command)
-
       }
       catch (err) {
         console.error(`[ SOCKr CMD ERROR ] - Error running command: ${cmd}`)

@@ -6,31 +6,28 @@ const sockrConfig = {
         development: {
           /** Add named commands here */
           example: {
-            icon: "example-icon",
-            description: "Demo command that prints the current directory",
-            cmd: "ls",
+            icon: 'example-icon',
+            description: 'Demo command that prints the current directory',
+            cmd: 'ls',
             params: [
               {
-                name: "demo-string",
+                name: 'demo-string',
                 withKey: true,
-                description: "Demo string param",
-                type: "string",
+                description: 'Demo string param',
+                type: 'string',
                 required: true,
-                value: ""
+                value: '',
               },
               {
-                name: "demo-array",
+                name: 'demo-array',
                 withKey: true,
-                description: "Demo array param",
-                type: "array",
+                description: 'Demo array param',
+                type: 'array',
                 required: true,
-                value: [
-                  "test",
-                  "test-2"
-                ]
-              }
-            ]
-          }
+                value: ['test', 'test-2'],
+              },
+            ],
+          },
         },
         production: {},
       },

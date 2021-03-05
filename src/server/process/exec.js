@@ -12,7 +12,6 @@ const defOpts = {
   stdio: 'pipe',
 }
 
-
 /**
  * Creates a child process and executes a command
  * @function
@@ -28,21 +27,30 @@ const defOpts = {
  */
 const exec = async (...props) => {
   const [
-    config=noOpObj,
+    // eslint-disable-next-line no-unused-vars
+    config = noOpObj,
     cmd,
-    args=noPropArr,
-    opts=noOpObj,
-    events=noOpObj,
+    args = noPropArr,
+    opts = noOpObj,
+    events = noOpObj,
     cwd,
-    env=noOpObj
+    env = noOpObj,
   ] = props
 
-  const childProc = spawn(cmd, args, deepMerge(defOpts, {
-    cwd: cwd || process.cwd(),
-    detached: false,
-    shell: '/bin/bash',
-    env,
-  }, opts))
+  const childProc = spawn(
+    cmd,
+    args,
+    deepMerge(
+      defOpts,
+      {
+        cwd: cwd || process.cwd(),
+        detached: false,
+        shell: '/bin/bash',
+        env,
+      },
+      opts
+    )
+  )
 
   childProc.stdout && childProc.stdout.setEncoding('utf-8')
   childProc.stderr && childProc.stderr.setEncoding('utf-8')
@@ -51,7 +59,6 @@ const exec = async (...props) => {
   childProc.on('exit', events.onExit)
   childProc.stdout.on('data', events.onStdOut)
   childProc.stderr.on('data', events.onStdErr)
-
 }
 
 module.exports = {

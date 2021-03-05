@@ -1,4 +1,3 @@
-
 /**
  * Cache holder for the joined reducers function
  * @type function
@@ -18,7 +17,7 @@ let _JOINED_REDUCERS
  */
 export const joinReducers = (sockrReducer, customReducer) => {
   // If the joined reducers are already set, just return them
-  if(_JOINED_REDUCERS) return _JOINED_REDUCERS
+  if (_JOINED_REDUCERS) return _JOINED_REDUCERS
 
   // Set the join reducer function, then return it
   _JOINED_REDUCERS = (state, action) => {

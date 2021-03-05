@@ -32,9 +32,7 @@ const setupSocketCmds = (Proc, socket, config) => {
  *
  * @returns {void}
  */
-const setupSocketEvents = (socket, config) => {
-
-}
+const setupSocketEvents = (socket, config) => {}
 
 /**
  * Initialization method for sockr setup
@@ -71,7 +69,6 @@ const sockr = async (server, config, cmdGroup) => {
     setupSocketCmds(Proc, socket, sockrConfig)
     setupSocketEvents(socket, sockrConfig)
   })
-
 }
 
 module.exports = {
