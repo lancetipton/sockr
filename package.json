@@ -1,6 +1,6 @@
 {
   "name": "@ltipton/sockr",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "Wrapper around socket.io for the server and client",
   "main": "build",
   "module": "build/client/esm",
@@ -17,7 +17,6 @@
     "sockr"
   ],
   "license": "MIT",
-  "private": true,
   "publishConfig": {
     "access": "public"
   },
