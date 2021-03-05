@@ -114,21 +114,6 @@ const getCommand = (commands, cmdOrId) => {
 }
 
 /**
- * Builds the params for the command based on the command param options
- * @function
- * @private
- *
- * @param {Object} cmd - Command the params belong to
- * @param {Object} params - Custom params to be built
- *
- * @returns {Array} - Built params as an array of strings
- */
-const buildParams = (cmd, params) => {
-  // TODO build the params for passing to the backend
-  return params
-}
-
-/**
  * Service class for managing client websocket events
  * @function
  * @private

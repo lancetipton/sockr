@@ -4343,9 +4343,6 @@ const getCommand = (commands, cmdOrId) => {
     }, false);
   }, false);
 };
-const buildParams = (cmd, params) => {
-  return [];
-};
 class SocketService {
   constructor() {
     _defineProperty(this, "emit", (event, data) => {
@@ -4410,7 +4407,7 @@ class SocketService {
       cmd,
       name,
       group,
-      params: buildParams()
+      params
     });
   }
 }
