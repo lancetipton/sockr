@@ -15,8 +15,3 @@ export const toggleIsRunning = ({ isRunning, name }) => {
     name,
   })
 }
-
-export {
-  toggleIsRunning as cmdEnd,
-  toggleIsRunning as cmdRunning,
-}

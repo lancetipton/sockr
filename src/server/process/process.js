@@ -26,14 +26,16 @@ class Process {
       default: '/bin/bash',
       overrides: [],
     },
-    exec: noOpObj,
+    exec: {
+      shell: '/bin/bash',
+    },
     root: appRoot,
     script: path.join(sockrRoot, `./scripts/exec.sh`),
   }
 
   constructor(commands, filters, config) {
-    this.commands = commands
-    this.filters = filters
+    this.commands = commands || noOpObj
+    this.filters = filters || noOpObj
     this.manager = Manager
     this.config = deepMerge(this.config, config)
   }
@@ -50,7 +52,7 @@ class Process {
    *
    * @returns {boolean} - If the data should be filtered
    */
-  filterMessage = (data, group, name) =>
+  filterMessage = (data, cmd, group, name) =>
     shouldFilterMessage({
       cmd,
       group,
@@ -72,13 +74,14 @@ class Process {
    *
    * @returns {void}
    */
-  stdOutEmit = (data, group, name) => {
-    !this.filterMessage(data, group, name) &&
+  stdOutEmit = (data, cmd, group, name) => {
+    !this.filterMessage(data, cmd, group, name) && (() => {
       this.manager.emitAll(EventTypes.CMD_OUT, {
         name,
         group,
         message: data,
       })
+    })()
   }
 
   /**
@@ -94,14 +97,18 @@ class Process {
    *
    * @returns {void}
    */
-  stdErrEmit = (data, group, name) => {
-    !this.filterMessage(data, group, name) &&
+  stdErrEmit = (data, cmd, group, name) => {
+    console.log(`---------- on error data ----------`)
+    console.log(data)
+
+    !this.filterMessage(data, cmd, group, name) &&
       this.manager.emitAll(EventTypes.CMD_ERR, {
         name,
         group,
         message: data,
       })
   }
+
 
   /**
    * Callback called when child process exits
@@ -116,7 +123,7 @@ class Process {
    *
    * @returns {void}
    */
-  onExitEmit = (code, group, name) => {
+  onExitEmit = (code, cmd, group, name) => {
     this.manager.isRunning = false
     this.manager.emitAll(EventTypes.CMD_END, {
       name,
@@ -138,13 +145,13 @@ class Process {
    *
    * @returns {void}
    */
-  onErrorEmit = (err, group, name) => {
+  onErrorEmit = (err, cmd, group, name) => {
     const message =
       err.message.indexOf('ENOENT') !== -1
         ? `[ SOCKr CMD ERROR ] - Command '${cmd}' does not exist!\n\nMessage:\n${err.message}`
         : `[ SOCKr CMD ERROR ] - Failed to run command!\n\nMessage:\n${err.message}`
 
-    if (this.filterMessage(err.message, group, name)) return
+    if (this.filterMessage(err.message, cmd, group, name)) return
 
     this.manager.isRunning = false
     this.manager.emitAll(EventTypes.CMD_FAIL, {
@@ -170,10 +177,10 @@ class Process {
    */
   buildEvents = (cmd, params, group, name) => {
     return {
-      onExit: code => this.onExitEmit(code, group, name),
-      onStdOut: data => this.stdOutEmit(data, group, name),
-      onStdErr: data => this.stdErrEmit(data, group, name),
-      onError: err => this.onErrorEmit(err, group, name),
+      onExit: code => this.onExitEmit(code, cmd, group, name),
+      onStdOut: data => this.stdOutEmit(data, cmd, group, name),
+      onStdErr: data => this.stdErrEmit(data, cmd, group, name),
+      onError: err => this.onErrorEmit(err, cmd, group, name),
     }
   }
 
@@ -210,7 +217,8 @@ class Process {
       this.buildEvents(cmd, params, group, name)
     )
 
-    return exec(...cmdArr)
+    exec(this.config, ...cmdArr)
+
   }
 
   /**

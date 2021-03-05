@@ -3,25 +3,21 @@ import { toggleIsRunning } from './toggleIsRunning'
 import { EventTypes } from '../../constants/eventTypes'
 
 /**
- * Dispatches an error that occurred on while a command was running
+ * Dispatches when a command has finished running
  * Makes call to toggleIsRunning, to turn it off
  * @param {Object} data - Message data from the socket
  *
  * @returns {void}
  */
-export const onFail = (data, service) => {
+export const cmdEnd = data => {
   return (
     data &&
     data.message &&
     getDispatch()({
-      type: EventTypes.ON_MESSAGE,
+      type: EventTypes.CMD_END,
       ...data,
     })
   )
 
-  toggleIsRunning(data, service)
-}
-
-export {
-  onFail as cmdFail
+  toggleIsRunning(data)
 }

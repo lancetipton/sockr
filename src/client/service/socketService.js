@@ -232,9 +232,9 @@ export class SocketService {
 
     // Socket Map Event types to internal actions
     Object.entries(EventTypes)
-      .map(([key, eventType]) => (
+      .map(([key, eventType]) => {
         this.socket.on(eventType, callAction(this, eventType))
-      ))
+      })
 
     // Initial connection to the server through the socket
     // Call the onConnection method which will handel authorization
