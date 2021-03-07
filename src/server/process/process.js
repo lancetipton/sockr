@@ -98,9 +98,6 @@ class Process {
    * @returns {void}
    */
   stdErrEmit = (data, cmd, group, name) => {
-    console.log(`---------- on error data ----------`)
-    console.log(data)
-
     !this.filterMessage(data, cmd, group, name) &&
       this.manager.emitAll(EventTypes.CMD_ERR, {
         name,
