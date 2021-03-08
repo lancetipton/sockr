@@ -6,7 +6,6 @@ import json from '@rollup/plugin-json'
 import { join } from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
-import { terser } from 'rollup-plugin-terser'
 
 const cmdExec = promisify(exec)
 
@@ -14,11 +13,7 @@ const { DOC_APP_PATH } = process.env
 const inDocker = Boolean(DOC_APP_PATH)
 const isProd = process.env.NODE_ENV === 'production'
 
-const workSpaceSockr = join(__dirname, `../../../node_modules/@ltipton/sockr`)
-const clientOutputDir = inDocker
-  ? join(workSpaceSockr, `build/client/esm`)
-  : 'build/client/esm'
-
+const clientOutputDir = 'build/client/esm'
 const shared = config => {
   return {
     plugins: [
@@ -27,10 +22,6 @@ const shared = config => {
       commonjs(),
       json(),
       cleanup(),
-      isProd &&
-        terser({
-          mangle: false,
-        }),
     ],
   }
 }
@@ -74,7 +65,6 @@ const pluginConfig = {
   client: {
     resolve: {
       browser: true,
-      dedupe: ['@keg-hub/jsutils'],
     },
   },
 }
