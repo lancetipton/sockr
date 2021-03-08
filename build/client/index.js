@@ -9,7 +9,6 @@ var io = require('socket.io-client');
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
 var React__default = /*#__PURE__*/_interopDefaultLegacy(React);
-var jsutils__default = /*#__PURE__*/_interopDefaultLegacy(jsutils);
 var io__default = /*#__PURE__*/_interopDefaultLegacy(io);
 
 function _defineProperty(obj, key, value) {
@@ -86,11 +85,8 @@ const useSockrItems = (findPaths = jsutils.noPropArr) => {
   }, [values, sockrRef && sockrRef.current]);
 };
 
-const {
-  deepFreeze
-} = jsutils__default['default'];
 const TAG_PREFIX = 'SOCKr';
-const EventTypes = deepFreeze({
+const EventTypes = {
   INIT: `${TAG_PREFIX}:INIT`,
   SET_ID: `${TAG_PREFIX}:SET_ID`,
   CONNECT: `${TAG_PREFIX}:CONNECT`,
@@ -106,7 +102,7 @@ const EventTypes = deepFreeze({
   CMD_OUT: `${TAG_PREFIX}:CMD_OUT`,
   CMD_ERR: `${TAG_PREFIX}:CMD_ERR`,
   CMD_FAIL: `${TAG_PREFIX}:CMD_FAIL`
-});
+};
 var eventTypes = {
   EventTypes,
   tagPrefix: TAG_PREFIX
@@ -114,12 +110,14 @@ var eventTypes = {
 var eventTypes_1 = eventTypes.EventTypes;
 var eventTypes_2 = eventTypes.tagPrefix;
 
+const frozenEvents = jsutils.deepFreeze(eventTypes_1);
+
 const addPeer = ({
   id,
   peers
 }) => {
   return getDispatch()({
-    type: eventTypes_1.ADD_PEER,
+    type: frozenEvents.ADD_PEER,
     id,
     peers
   });
@@ -131,7 +129,7 @@ const setId = ({
   isRunning
 }) => {
   getDispatch()({
-    type: eventTypes_1.SET_ID,
+    type: frozenEvents.SET_ID,
     id,
     isRunning,
     ...data
@@ -145,7 +143,7 @@ const setCmds = ({
 }) => {
   return getDispatch()({
     commands,
-    type: eventTypes_1.SET_CMDS
+    type: frozenEvents.SET_CMDS
   });
 };
 
@@ -156,7 +154,7 @@ const init = (data = jsutils.noOpObj, service = jsutils.noOpObj) => {
 
 const connect = () => {
   return getDispatch()({
-    type: eventTypes_1.CONNECT,
+    type: frozenEvents.CONNECT,
     connected: true
   });
 };
@@ -166,7 +164,7 @@ const toggleIsRunning = ({
   name
 }) => {
   getDispatch()({
-    type: eventTypes_1.RUNNING,
+    type: frozenEvents.RUNNING,
     isRunning,
     name
   });
@@ -174,28 +172,28 @@ const toggleIsRunning = ({
 
 const cmdEnd = data => {
   return data && data.message && getDispatch()({
-    type: eventTypes_1.CMD_END,
+    type: frozenEvents.CMD_END,
     ...data
   });
 };
 
 const cmdErr = data => {
   data && data.message && getDispatch()({
-    type: eventTypes_1.CMD_ERR,
+    type: frozenEvents.CMD_ERR,
     ...data
   });
 };
 
 const cmdFail = (data, service) => {
   return data && data.message && getDispatch()({
-    type: eventTypes_1.CMD_FAIL,
+    type: frozenEvents.CMD_FAIL,
     ...data
   });
 };
 
 const cmdOut = data => {
   data && data.message && getDispatch()({
-    type: eventTypes_1.CMD_OUT,
+    type: frozenEvents.CMD_OUT,
     ...data
   });
 };
@@ -205,7 +203,7 @@ const peerDisconnect = ({
   peers
 }) => {
   return getDispatch()({
-    type: eventTypes_1.DISCONNECT_PEER,
+    type: frozenEvents.DISCONNECT_PEER,
     id,
     peers
   });
@@ -297,9 +295,9 @@ class SocketService {
       const namCaps = jsutils.snakeCase(name).toUpperCase();
       if (namCaps === 'ALL') return;
       const eventType = `${eventTypes_2}:${namCaps}`;
-      jsutils.isFunc(action) && !eventTypes_1[namCaps] && this.socket.on(eventType, callAction(this, eventType));
+      jsutils.isFunc(action) && !frozenEvents[namCaps] && this.socket.on(eventType, callAction(this, eventType));
     });
-    Object.entries(eventTypes_1).map(([key, eventType]) => {
+    Object.entries(frozenEvents).map(([key, eventType]) => {
       this.socket.on(eventType, callAction(this, eventType));
     });
     this.socket.on(`connect`, this.onConnection.bind(this, token));
@@ -315,7 +313,7 @@ class SocketService {
       name,
       group
     } = getCommand(this.commands, command);
-    return this.emit(eventTypes_1.RUN_CMD, {
+    return this.emit(frozenEvents.RUN_CMD, {
       id,
       cmd,
       name,
@@ -338,13 +336,13 @@ const initialState = {
 const sockrReducer = (state = initialState, action) => {
   if (!state || !action || !action.type) return state;
   switch (action.type) {
-    case eventTypes_1.CONNECT:
+    case frozenEvents.CONNECT:
       {
         return action.connected === state.connected ? state : { ...state,
           connected: true
         };
       }
-    case eventTypes_1.SET_ID:
+    case frozenEvents.SET_ID:
       {
         const {
           type,
@@ -354,20 +352,20 @@ const sockrReducer = (state = initialState, action) => {
           ...updates
         };
       }
-    case eventTypes_1.RUNNING:
+    case frozenEvents.RUNNING:
       {
         return action.isRunning === state.isRunning ? state : { ...state,
           runningCmd: action.isRunning && action.name || null,
           isRunning: action.isRunning
         };
       }
-    case eventTypes_1.ADD_PEER:
+    case frozenEvents.ADD_PEER:
       {
         return !action.peers ? state : { ...state,
           peers: action.peers
         };
       }
-    case eventTypes_1.DISCONNECT_PEER:
+    case frozenEvents.DISCONNECT_PEER:
       {
         return !action.peers ? state : { ...state,
           peers: action.peers
@@ -419,20 +417,12 @@ const SockrProvider = props => {
   }, React__default['default'].createElement(MemoChildren, null, children));
 };
 
-var constants = { ...eventTypes
-};
-
-const {
-  EventTypes: EventTypes$1,
-  tagPrefix
-} = constants;
-
-exports.EventTypes = EventTypes$1;
+exports.EventTypes = frozenEvents;
 exports.SocketService = SocketService;
 exports.SockrHoc = SockrHoc;
 exports.SockrProvider = SockrProvider;
 exports.WSService = WSService;
-exports.tagPrefix = tagPrefix;
+exports.tagPrefix = eventTypes_2;
 exports.useSockr = useSockr;
 exports.useSockrItems = useSockrItems;
 //# sourceMappingURL=index.js.map

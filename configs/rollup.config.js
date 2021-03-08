@@ -3,7 +3,6 @@ import commonjs from '@rollup/plugin-commonjs'
 import cleanup from 'rollup-plugin-cleanup'
 import resolve from '@rollup/plugin-node-resolve'
 import json from '@rollup/plugin-json'
-import { join } from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 

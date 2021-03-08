@@ -1,5 +1,5 @@
+import { EventTypes } from '../constants'
 import { getDispatch } from '../reducer/sockrState'
-import { EventTypes } from '../../constants/eventTypes'
 
 /**
  * Dispatches passed in commands to the reducers

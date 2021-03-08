@@ -1,6 +1,6 @@
+import { EventTypes } from '../constants'
 import { getDispatch } from '../reducer/sockrState'
 import { toggleIsRunning } from './toggleIsRunning'
-import { EventTypes } from '../../constants/eventTypes'
 
 /**
  * Dispatches that a command is running

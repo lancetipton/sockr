@@ -1,5 +1,5 @@
+import { EventTypes } from '../constants'
 import { getDispatch } from '../reducer/sockrState'
-import { EventTypes } from '../../constants/eventTypes'
 
 /**
  * Dispatches an error message that occurred on while a command was running

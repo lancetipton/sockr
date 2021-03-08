@@ -8,7 +8,7 @@ import {
   snakeCase,
   isObj,
 } from '@keg-hub/jsutils'
-import { EventTypes, tagPrefix } from '../../constants/eventTypes'
+import { EventTypes, tagPrefix } from '../constants'
 import * as InternalActions from '../actions'
 
 /**

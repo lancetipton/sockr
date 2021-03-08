@@ -1,5 +1,5 @@
+import { EventTypes } from '../constants'
 import { noOpObj } from '@keg-hub/jsutils'
-import { EventTypes } from '../../constants/eventTypes'
 
 /**
  * Initial state of the sockr reducer

@@ -1,8 +1,6 @@
-const { deepFreeze } = require('@keg-hub/jsutils')
-
 const TAG_PREFIX = 'SOCKr'
 
-const EventTypes = deepFreeze({
+const EventTypes = {
   // General
   INIT: `${TAG_PREFIX}:INIT`,
   SET_ID: `${TAG_PREFIX}:SET_ID`,
@@ -27,7 +25,7 @@ const EventTypes = deepFreeze({
   CMD_OUT: `${TAG_PREFIX}:CMD_OUT`,
   CMD_ERR: `${TAG_PREFIX}:CMD_ERR`,
   CMD_FAIL: `${TAG_PREFIX}:CMD_FAIL`,
-})
+}
 
 module.exports = {
   EventTypes,

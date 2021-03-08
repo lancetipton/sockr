@@ -1,5 +1,5 @@
+import { EventTypes } from '../constants'
 import { getDispatch } from '../reducer/sockrState'
-import { EventTypes } from '../../constants/eventTypes'
 
 /**
  * Toggles if the backend is running a command
