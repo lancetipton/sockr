@@ -1,1 +1,3 @@
-module.exports = require('./eventTypes')
+module.exports = {
+  ...require('./eventTypes'),
+}

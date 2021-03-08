@@ -6,10 +6,13 @@ import json from '@rollup/plugin-json'
 import { join } from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
+import { terser } from 'rollup-plugin-terser'
+
 const cmdExec = promisify(exec)
 
 const { DOC_APP_PATH } = process.env
 const inDocker = Boolean(DOC_APP_PATH)
+const isProd = process.env.NODE_ENV === 'production'
 
 const workSpaceSockr = join(__dirname, `../../../node_modules/@ltipton/sockr`)
 const clientOutputDir = inDocker
@@ -24,6 +27,10 @@ const shared = config => {
       commonjs(),
       json(),
       cleanup(),
+      isProd &&
+        terser({
+          mangle: false,
+        }),
     ],
   }
 }
@@ -41,7 +48,7 @@ const configs = {
     ],
   },
   client: {
-    external: ['react'],
+    external: ['react', 'socket.io-client', 'socket.io', '@keg-hub/jsutils'],
     input: 'src/client/index.js',
     output: [
       {
@@ -67,6 +74,7 @@ const pluginConfig = {
   client: {
     resolve: {
       browser: true,
+      dedupe: ['@keg-hub/jsutils'],
     },
   },
 }
