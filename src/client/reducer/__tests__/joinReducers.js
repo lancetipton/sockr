@@ -8,7 +8,6 @@ jest.resetAllMocks()
 jest.clearAllMocks()
 
 describe('joinReducers', () => {
-
   beforeEach(() => {
     sockrReducer.mockClear()
     customReducer.mockClear()
@@ -41,5 +40,4 @@ describe('joinReducers', () => {
       joinReducers(sockrReducer)
     }).not.toThrow()
   })
-
 })

@@ -30,7 +30,6 @@ export const joinReducers = (sockrReducer, customReducer) => {
     return isFunc(customReducer)
       ? customReducer(updatedState, action)
       : updatedState
-
   }
 
   return _JOINED_REDUCERS

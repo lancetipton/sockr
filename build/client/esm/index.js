@@ -155,7 +155,7 @@ const toggleIsRunning = ({
   name
 }) => {
   getDispatch()({
-    type: frozenEvents.RUNNING,
+    type: frozenEvents.CMD_RUNNING,
     isRunning,
     name
   });
@@ -343,7 +343,7 @@ const sockrReducer = (state = initialState, action) => {
           ...updates
         };
       }
-    case frozenEvents.RUNNING:
+    case frozenEvents.CMD_RUNNING:
       {
         return action.isRunning === state.isRunning ? state : { ...state,
           runningCmd: action.isRunning && action.name || null,
@@ -374,7 +374,7 @@ const joinReducers = (sockrReducer, customReducer) => {
   if (_JOINED_REDUCERS) return _JOINED_REDUCERS;
   _JOINED_REDUCERS = (state, action) => {
     const updatedState = sockrReducer(state, action);
-    return customReducer(updatedState, action);
+    return isFunc(customReducer) ? customReducer(updatedState, action) : updatedState;
   };
   return _JOINED_REDUCERS;
 };
