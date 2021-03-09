@@ -48,7 +48,7 @@ export const sockrReducer = (state = initialState, action) => {
         }
   }
 
-  case EventTypes.RUNNING: {
+  case EventTypes.CMD_RUNNING: {
     return action.isRunning === state.isRunning
       ? state
       : {

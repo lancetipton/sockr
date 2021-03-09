@@ -1,3 +1,5 @@
+import { isFunc } from '@keg-hub/jsutils'
+
 /**
  * Cache holder for the joined reducers function
  * @type function
@@ -21,8 +23,14 @@ export const joinReducers = (sockrReducer, customReducer) => {
 
   // Set the join reducer function, then return it
   _JOINED_REDUCERS = (state, action) => {
+    // First update the internal reducer
     const updatedState = sockrReducer(state, action)
-    return customReducer(updatedState, action)
+
+    // Then check if we should call the customReducer
+    return isFunc(customReducer)
+      ? customReducer(updatedState, action)
+      : updatedState
+
   }
 
   return _JOINED_REDUCERS

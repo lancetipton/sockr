@@ -10,7 +10,7 @@ import { getDispatch } from '../reducer/sockrState'
  */
 export const toggleIsRunning = ({ isRunning, name }) => {
   getDispatch()({
-    type: EventTypes.RUNNING,
+    type: EventTypes.CMD_RUNNING,
     isRunning,
     name,
   })
