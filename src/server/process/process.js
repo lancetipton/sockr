@@ -30,6 +30,7 @@ class Process {
     },
     root: appRoot,
     script: path.join(sockrRoot, `./scripts/exec.sh`),
+    debug: false
   }
 
   constructor(commands, filters, config) {
@@ -37,6 +38,22 @@ class Process {
     this.filters = filters || noOpObj
     this.manager = Manager
     this.config = deepMerge(this.config, config)
+  }
+
+  /**
+  * Logs an error to the terminal when debug is true
+  */
+  debugError = (err=noOpObj, message) => {
+    this.config.debug && 
+      console.error(`[Sockr Error] ${err.message}`, message)
+  }
+
+
+  /**
+  * Logs an event to the terminal when debug is true
+  */
+  debugEvent = (event, message) => {
+    this.config.debug && console.log(`[Sockr Event] ${event}`, message)
   }
 
   /**
@@ -76,11 +93,15 @@ class Process {
   stdOutEmit = (data, cmd, group, name) => {
     !this.filterMessage(data, cmd, group, name) &&
       (() => {
-        this.manager.emitAll(EventTypes.CMD_OUT, {
+      
+        const emitMessage = {
           name,
           group,
           message: data,
-        })
+        }
+
+        this.debugEvent(EventTypes.CMD_OUT, emitMessage)
+        this.manager.emitAll(EventTypes.CMD_OUT, emitMessage)
       })()
   }
 
@@ -98,12 +119,17 @@ class Process {
    * @returns {void}
    */
   stdErrEmit = (data, cmd, group, name) => {
+
+    const emitMessage = {
+      name,
+      group,
+      message: data,
+    }
+
+    this.debugEvent(EventTypes.CMD_ERR, emitMessage)
+  
     !this.filterMessage(data, cmd, group, name) &&
-      this.manager.emitAll(EventTypes.CMD_ERR, {
-        name,
-        group,
-        message: data,
-      })
+      this.manager.emitAll(EventTypes.CMD_ERR, emitMessage)
   }
 
   /**
@@ -121,11 +147,15 @@ class Process {
    */
   onExitEmit = (code, cmd, group, name) => {
     this.manager.isRunning = false
-    this.manager.emitAll(EventTypes.CMD_END, {
+    
+    const emitMessage = {
       name,
       group,
       data: { exitCode: code },
-    })
+    }
+    
+    this.debugEvent(EventTypes.CMD_END, emitMessage)
+    this.manager.emitAll(EventTypes.CMD_END, emitMessage)
   }
 
   /**
@@ -147,15 +177,20 @@ class Process {
         ? `[ SOCKr CMD ERROR ] - Command '${cmd}' does not exist!\n\nMessage:\n${err.message}`
         : `[ SOCKr CMD ERROR ] - Failed to run command!\n\nMessage:\n${err.message}`
 
-    if (this.filterMessage(err.message, cmd, group, name)) return
-
-    this.manager.isRunning = false
-    this.manager.emitAll(EventTypes.CMD_FAIL, {
+    const emitMessage = {
       name,
       group,
       error: true,
       message: message,
-    })
+    }
+
+    this.debugError(err, emitMessage)
+
+    if (this.filterMessage(err.message, cmd, group, name)) return
+
+    this.manager.isRunning = false
+    this.debugEvent(EventTypes.CMD_FAIL, emitMessage)
+    this.manager.emitAll(EventTypes.CMD_FAIL, emitMessage)
   }
 
   /**
@@ -199,12 +234,16 @@ class Process {
 
     // Update the connected sockets, that a command is running
     this.manager.isRunning = true
-    this.manager.emitAll(EventTypes.CMD_RUNNING, {
+    
+    const emitMessage = {
       name,
       group,
       data: { cmd, params },
       message: 'Running command',
-    })
+    }
+
+    this.debugEvent(EventTypes.CMD_RUNNING, emitMessage)
+    this.manager.emitAll(EventTypes.CMD_RUNNING, emitMessage)
 
     const cmdArr = addConfig(
       cmd,
@@ -231,6 +270,8 @@ class Process {
     // Disable checking auth for now until injectable auth is setup
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
+      this.debugEvent(EventTypes.RUN_CMD, message)
+    
       const { name, cmd, group } = message
 
       try {
@@ -248,16 +289,20 @@ class Process {
         return command.cmd && this.exec(command)
       }
       catch (err) {
-        console.error(`[ SOCKr CMD ERROR ] - Error running command: ${cmd}`)
-        console.error(err.stack)
 
+        this.debugError(err, message)
         this.manager.isRunning = false
-        this.manager.emitAll(EventTypes.CMD_RUNNING, {
+
+        const emitMessage = {
           name,
           group,
           error: true,
           message: `Error running command:\n${err.message}`,
-        })
+        }
+
+        this.debugEvent(EventTypes.RUN_CMD, emitMessage)
+
+        this.manager.emitAll(EventTypes.CMD_RUNNING, emitMessage)
       }
     })
   }
