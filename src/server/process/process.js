@@ -30,7 +30,7 @@ class Process {
     },
     root: appRoot,
     script: path.join(sockrRoot, `./scripts/exec.sh`),
-    debug: false
+    debug: false,
   }
 
   constructor(commands, filters, config) {
@@ -41,17 +41,15 @@ class Process {
   }
 
   /**
-  * Logs an error to the terminal when debug is true
-  */
-  debugError = (err=noOpObj, message) => {
-    this.config.debug && 
-      console.error(`[Sockr Error] ${err.message}`, message)
+   * Logs an error to the terminal when debug is true
+   */
+  debugError = (err = noOpObj, message) => {
+    this.config.debug && console.error(`[Sockr Error] ${err.message}`, message)
   }
 
-
   /**
-  * Logs an event to the terminal when debug is true
-  */
+   * Logs an event to the terminal when debug is true
+   */
   debugEvent = (event, message) => {
     this.config.debug && console.log(`[Sockr Event] ${event}`, message)
   }
@@ -93,7 +91,6 @@ class Process {
   stdOutEmit = (data, cmd, group, name) => {
     !this.filterMessage(data, cmd, group, name) &&
       (() => {
-      
         const emitMessage = {
           name,
           group,
@@ -119,7 +116,6 @@ class Process {
    * @returns {void}
    */
   stdErrEmit = (data, cmd, group, name) => {
-
     const emitMessage = {
       name,
       group,
@@ -127,7 +123,7 @@ class Process {
     }
 
     this.debugEvent(EventTypes.CMD_ERR, emitMessage)
-  
+
     !this.filterMessage(data, cmd, group, name) &&
       this.manager.emitAll(EventTypes.CMD_ERR, emitMessage)
   }
@@ -147,13 +143,13 @@ class Process {
    */
   onExitEmit = (code, cmd, group, name) => {
     this.manager.isRunning = false
-    
+
     const emitMessage = {
       name,
       group,
       data: { exitCode: code },
     }
-    
+
     this.debugEvent(EventTypes.CMD_END, emitMessage)
     this.manager.emitAll(EventTypes.CMD_END, emitMessage)
   }
@@ -234,7 +230,7 @@ class Process {
 
     // Update the connected sockets, that a command is running
     this.manager.isRunning = true
-    
+
     const emitMessage = {
       name,
       group,
@@ -271,8 +267,8 @@ class Process {
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
       this.debugEvent(EventTypes.RUN_CMD, message)
-    
-      const { name, cmd, group } = message
+
+      const { name, group } = message
 
       try {
         // Validate the cmd to ensure it is allowed to run
@@ -289,7 +285,6 @@ class Process {
         return command.cmd && this.exec(command)
       }
       catch (err) {
-
         this.debugError(err, message)
         this.manager.isRunning = false
 
