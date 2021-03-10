@@ -20,7 +20,7 @@ module.exports = {
   plugins: ['jest'],
   extends: ['plugin:jest/recommended'],
   settings: {},
-  ignorePatterns: ['**/build'],
+  ignorePatterns: ['**/build', '**/__tests__'],
   rules: {
     /* General */
     'no-console': ['warn', { allow: ['warn', 'error'] }],
