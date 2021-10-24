@@ -1,9 +1,8 @@
 const SocketIO = require('socket.io')
 const { Manager } = require('./manager')
 const { Process } = require('./process')
-const { tagPrefix } = require('../constants')
 const { loadConfig } = require('./loadConfig')
-const { checkCall }  = require('@keg-hub/jsutils')
+const { checkCall } = require('@keg-hub/jsutils')
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -36,17 +35,17 @@ const setupSocketCmds = (Proc, socket, config) => {
 const setupSocketEvents = (socket, config) => {
   config &&
     config.events &&
-    Object.entries(config.events)
-      .map(([name, method]) => socket.on(
-        `${config.tagPrefix ? config.tagPrefix + ':' : ''}${name}`,
-        message => checkCall(method, {
+    Object.entries(config.events).map(([ name, method ]) =>
+      socket.on(name, message =>
+        checkCall(method, {
           message,
           socket,
           config,
           Manager,
           io: SocketIO,
         })
-      ))
+      )
+    )
 }
 
 /**
