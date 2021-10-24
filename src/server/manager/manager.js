@@ -182,7 +182,7 @@ class SocketManager {
   }
 
   /**
-   * Broadcasts a message to all connected sockets
+   * Broadcasts a message to all connected sockets other then the passed in socket
    * Passes tag and string formatted data object as arguments
    * @memberof SocketManager
    * @alias instance&period;broadCastAll

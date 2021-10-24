@@ -1,7 +1,9 @@
 const SocketIO = require('socket.io')
 const { Manager } = require('./manager')
 const { Process } = require('./process')
+const { tagPrefix } = require('../constants')
 const { loadConfig } = require('./loadConfig')
+const { checkCall }  = require('@keg-hub/jsutils')
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -22,8 +24,7 @@ const setupSocketCmds = (Proc, socket, config) => {
 }
 
 /**
- * @todo - add ability to load custom websocket events
- * Sets up custom websocket events base on the sockrConfig object
+ * Sets up custom websocket events base on the config.events object
  * @function
  * @public
  * @export
@@ -32,7 +33,21 @@ const setupSocketCmds = (Proc, socket, config) => {
  *
  * @returns {void}
  */
-const setupSocketEvents = (socket, config) => {}
+const setupSocketEvents = (socket, config) => {
+  config &&
+    config.events &&
+    Object.entries(config.events)
+      .map(([name, method]) => socket.on(
+        `${config.tagPrefix ? config.tagPrefix + ':' : ''}${name}`,
+        message => checkCall(method, {
+          message,
+          socket,
+          config,
+          Manager,
+          io: SocketIO,
+        })
+      ))
+}
 
 /**
  * Initialization method for sockr setup
@@ -73,4 +88,5 @@ const sockr = async (server, config, cmdGroup) => {
 
 module.exports = {
   sockr,
+  Manager,
 }
