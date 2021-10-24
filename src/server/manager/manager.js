@@ -255,9 +255,6 @@ class SocketManager {
           `SocketManager.emitAll requires an event tag as param 2!`
         )
 
-      console.log(`---------- formatted ----------`)
-      console.log(this.formatTag(tag))
-
       this.socketIo.emit(
         this.formatTag(tag),
         this.toJsonStr(this.buildMessage(data))
