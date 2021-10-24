@@ -44,7 +44,7 @@ function _extends() {
   return _extends.apply(this, arguments);
 }
 
-const SocketContext = React__default['default'].createContext(null);
+const SocketContext = React__default["default"].createContext(null);
 
 const useSockr = () => {
   return React.useContext(SocketContext);
@@ -52,7 +52,7 @@ const useSockr = () => {
 
 const SockrHoc = Component => {
   const websocket = useSockr();
-  return props => React__default['default'].createElement(Component, _extends({}, props, {
+  return props => React__default["default"].createElement(Component, _extends({}, props, {
     websocket: websocket
   }));
 };
@@ -107,10 +107,8 @@ var eventTypes = {
   EventTypes,
   tagPrefix: TAG_PREFIX
 };
-var eventTypes_1 = eventTypes.EventTypes;
-var eventTypes_2 = eventTypes.tagPrefix;
 
-const frozenEvents = jsutils.deepFreeze(eventTypes_1);
+const frozenEvents = jsutils.deepFreeze(eventTypes.EventTypes);
 
 const addPeer = ({
   id,
@@ -283,7 +281,7 @@ class SocketService {
     this.logDebug = logDebug;
     const endpoint = buildEndpoint(config);
     this.logData(`Connecting to backend socket => ${endpoint}${config.path}`);
-    this.socket = io__default['default'](endpoint, {
+    this.socket = io__default["default"](endpoint, {
       path: config.path,
       transports: ['websocket', 'polling', 'flashsocket']
     });
@@ -294,7 +292,7 @@ class SocketService {
     Object.entries(jsutils.get(this.config, 'events', jsutils.noOpObj)).map(([name, action]) => {
       const namCaps = jsutils.snakeCase(name).toUpperCase();
       if (namCaps === 'ALL') return;
-      const eventType = `${eventTypes_2}:${namCaps}`;
+      const eventType = `${eventTypes.tagPrefix}:${namCaps}`;
       jsutils.isFunc(action) && !frozenEvents[namCaps] && this.socket.on(eventType, callAction(this, eventType));
     });
     Object.entries(frozenEvents).map(([key, eventType]) => {
@@ -303,7 +301,7 @@ class SocketService {
     this.socket.on(`connect`, this.onConnection.bind(this, token));
   }
   onConnection(token, data) {
-    const connectAction = callAction(this, `${eventTypes_2}:CONNECT`);
+    const connectAction = callAction(this, `${eventTypes.tagPrefix}:CONNECT`);
     connectAction(data);
   }
   runCommand(command, params) {
@@ -324,7 +322,7 @@ class SocketService {
 }
 const WSService = new SocketService();
 
-const initialState = {
+const initialState$1 = {
   connected: false,
   peers: [],
   id: null,
@@ -333,7 +331,7 @@ const initialState = {
   server: jsutils.noOpObj,
   events: jsutils.noOpObj
 };
-const sockrReducer = (state = initialState, action) => {
+const sockrReducer = (state = initialState$1, action) => {
   if (!state || !action || !action.type) return state;
   switch (action.type) {
     case frozenEvents.CONNECT:
@@ -388,17 +386,17 @@ const joinReducers = (sockrReducer, customReducer) => {
   return _JOINED_REDUCERS;
 };
 
-const initialState$1 = sockrReducer();
-setNextState(initialState$1);
+const initialState = sockrReducer();
+setNextState(initialState);
 const useSockrReducer = (customReducer, customInitialState) => {
-  const [state, dispatch] = React.useReducer(joinReducers(sockrReducer, customReducer), jsutils.deepMerge(initialState$1, customInitialState));
+  const [state, dispatch] = React.useReducer(joinReducers(sockrReducer, customReducer), jsutils.deepMerge(initialState, customInitialState));
   getState() !== state && setNextState(state);
   getDispatch() !== dispatch && setDispatch(dispatch);
   return state;
 };
 
 const isDev = process.env.NODE_ENV === 'development';
-const MemoChildren = React__default['default'].memo(props => React__default['default'].createElement(React__default['default'].Fragment, null, props.children));
+const MemoChildren = React__default["default"].memo(props => React__default["default"].createElement(React__default["default"].Fragment, null, props.children));
 const SockrProvider = props => {
   const {
     children,
@@ -412,9 +410,9 @@ const SockrProvider = props => {
     WSService && !WSService.socket && WSService.initSocket(websocket, token, debug);
     return () => !isDev && WSService.disconnect();
   }, []);
-  return React__default['default'].createElement(SocketContext.Provider, {
+  return React__default["default"].createElement(SocketContext.Provider, {
     value: websocket
-  }, React__default['default'].createElement(MemoChildren, null, children));
+  }, React__default["default"].createElement(MemoChildren, null, children));
 };
 
 exports.EventTypes = frozenEvents;
@@ -422,7 +420,7 @@ exports.SocketService = SocketService;
 exports.SockrHoc = SockrHoc;
 exports.SockrProvider = SockrProvider;
 exports.WSService = WSService;
-exports.tagPrefix = eventTypes_2;
+exports.tagPrefix = eventTypes.tagPrefix;
 exports.useSockr = useSockr;
 exports.useSockrItems = useSockrItems;
 //# sourceMappingURL=index.js.map

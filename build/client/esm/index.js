@@ -98,10 +98,8 @@ var eventTypes = {
   EventTypes,
   tagPrefix: TAG_PREFIX
 };
-var eventTypes_1 = eventTypes.EventTypes;
-var eventTypes_2 = eventTypes.tagPrefix;
 
-const frozenEvents = deepFreeze(eventTypes_1);
+const frozenEvents = deepFreeze(eventTypes.EventTypes);
 
 const addPeer = ({
   id,
@@ -285,7 +283,7 @@ class SocketService {
     Object.entries(get(this.config, 'events', noOpObj)).map(([name, action]) => {
       const namCaps = snakeCase(name).toUpperCase();
       if (namCaps === 'ALL') return;
-      const eventType = `${eventTypes_2}:${namCaps}`;
+      const eventType = `${eventTypes.tagPrefix}:${namCaps}`;
       isFunc(action) && !frozenEvents[namCaps] && this.socket.on(eventType, callAction(this, eventType));
     });
     Object.entries(frozenEvents).map(([key, eventType]) => {
@@ -294,7 +292,7 @@ class SocketService {
     this.socket.on(`connect`, this.onConnection.bind(this, token));
   }
   onConnection(token, data) {
-    const connectAction = callAction(this, `${eventTypes_2}:CONNECT`);
+    const connectAction = callAction(this, `${eventTypes.tagPrefix}:CONNECT`);
     connectAction(data);
   }
   runCommand(command, params) {
@@ -315,7 +313,7 @@ class SocketService {
 }
 const WSService = new SocketService();
 
-const initialState = {
+const initialState$1 = {
   connected: false,
   peers: [],
   id: null,
@@ -324,7 +322,7 @@ const initialState = {
   server: noOpObj,
   events: noOpObj
 };
-const sockrReducer = (state = initialState, action) => {
+const sockrReducer = (state = initialState$1, action) => {
   if (!state || !action || !action.type) return state;
   switch (action.type) {
     case frozenEvents.CONNECT:
@@ -379,10 +377,10 @@ const joinReducers = (sockrReducer, customReducer) => {
   return _JOINED_REDUCERS;
 };
 
-const initialState$1 = sockrReducer();
-setNextState(initialState$1);
+const initialState = sockrReducer();
+setNextState(initialState);
 const useSockrReducer = (customReducer, customInitialState) => {
-  const [state, dispatch] = useReducer(joinReducers(sockrReducer, customReducer), deepMerge(initialState$1, customInitialState));
+  const [state, dispatch] = useReducer(joinReducers(sockrReducer, customReducer), deepMerge(initialState, customInitialState));
   getState() !== state && setNextState(state);
   getDispatch() !== dispatch && setDispatch(dispatch);
   return state;
@@ -408,5 +406,6 @@ const SockrProvider = props => {
   }, React.createElement(MemoChildren, null, children));
 };
 
-export { frozenEvents as EventTypes, SocketService, SockrHoc, SockrProvider, WSService, eventTypes_2 as tagPrefix, useSockr, useSockrItems };
+var tagPrefix = eventTypes.tagPrefix;
+export { frozenEvents as EventTypes, SocketService, SockrHoc, SockrProvider, WSService, tagPrefix, useSockr, useSockrItems };
 //# sourceMappingURL=index.js.map
