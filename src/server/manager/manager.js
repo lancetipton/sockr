@@ -1,13 +1,16 @@
-const { EventTypes } = require('../../constants')
+const { EventTypes, tagPrefix } = require('../../constants')
 const {
   isFunc,
   isObj,
   isStr,
   uuid,
   noOpObj,
+  snakeCase,
   checkCall,
   deepMerge,
 } = require('@keg-hub/jsutils')
+
+const EventTypeValues = Object.values(EventTypes)
 
 /**
  * Gets the current time, used for a timestamp
@@ -49,6 +52,23 @@ class SocketManager {
     this.peers = {}
     this.socketIo
     this.isRunning = false
+  }
+
+  /**
+   * Add tag formatting for custom events
+   * @param {string} tag - Event tag name used to emit the event
+   *
+   * @returns {string} - Formatted tag with tagPrefix
+   */
+  formatTag = tag => {
+    if(EventTypeValues.includes(tag)) return tag
+
+    const trimmed = tag.trim()
+    const [___, split] = trimmed.startsWith(`${tagPrefix}:`)
+      ? trimmed.split(':')
+      : [null, trimmed]
+
+    return `${tagPrefix}:${snakeCase(split).toUpperCase()}`
   }
 
   /**
@@ -171,7 +191,7 @@ class SocketManager {
       if (isStr(socket)) socket = this.getSocket(socket)
 
       socket && isFunc(socket.emit)
-        ? socket.emit(tag, this.toJsonStr(this.buildMessage(data)))
+        ? socket.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(data)))
         : console.error(
           `A Socket with an emit method is required to emit events!`
         )
@@ -201,7 +221,7 @@ class SocketManager {
       socket &&
         socket.broadcast &&
         isFunc(socket.broadcast.emit) &&
-        socket.broadcast.emit(tag, this.toJsonStr(this.buildMessage(data)))
+        socket.broadcast.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(data)))
     }
     catch (err) {
       logError(err, 'broadCastAll')
@@ -229,7 +249,10 @@ class SocketManager {
           `SocketManager.emitAll requires an event tag as param 2!`
         )
 
-      this.socketIo.emit(tag, this.toJsonStr(this.buildMessage(data)))
+      console.log(`---------- formatted ----------`)
+      console.log(this.formatTag(tag))
+
+      this.socketIo.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(data)))
     }
     catch (err) {
       logError(err, 'emitAll')
