@@ -61,12 +61,12 @@ class SocketManager {
    * @returns {string} - Formatted tag with tagPrefix
    */
   formatTag = tag => {
-    if(EventTypeValues.includes(tag)) return tag
+    if (EventTypeValues.includes(tag)) return tag
 
     const trimmed = tag.trim()
-    const [___, split] = trimmed.startsWith(`${tagPrefix}:`)
+    const [ ___, split ] = trimmed.startsWith(`${tagPrefix}:`)
       ? trimmed.split(':')
-      : [null, trimmed]
+      : [ null, trimmed ]
 
     return `${tagPrefix}:${snakeCase(split).toUpperCase()}`
   }
@@ -191,7 +191,10 @@ class SocketManager {
       if (isStr(socket)) socket = this.getSocket(socket)
 
       socket && isFunc(socket.emit)
-        ? socket.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(data)))
+        ? socket.emit(
+          this.formatTag(tag),
+          this.toJsonStr(this.buildMessage(data))
+        )
         : console.error(
           `A Socket with an emit method is required to emit events!`
         )
@@ -221,7 +224,10 @@ class SocketManager {
       socket &&
         socket.broadcast &&
         isFunc(socket.broadcast.emit) &&
-        socket.broadcast.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(data)))
+        socket.broadcast.emit(
+          this.formatTag(tag),
+          this.toJsonStr(this.buildMessage(data))
+        )
     }
     catch (err) {
       logError(err, 'broadCastAll')
@@ -252,7 +258,10 @@ class SocketManager {
       console.log(`---------- formatted ----------`)
       console.log(this.formatTag(tag))
 
-      this.socketIo.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(data)))
+      this.socketIo.emit(
+        this.formatTag(tag),
+        this.toJsonStr(this.buildMessage(data))
+      )
     }
     catch (err) {
       logError(err, 'emitAll')
