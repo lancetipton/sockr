@@ -33,19 +33,19 @@ const setupSocketCmds = (Proc, socket, config) => {
  * @returns {void}
  */
 const setupSocketEvents = (socket, config) => {
-  Object.entries(get(config, 'events', noOpObj))
-    .map(([ name, method ]) =>
+  Object.entries(get(config, 'events', noOpObj)).map(
+    ([ name, method ]) =>
       name !== 'connection' &&
-        socket.on(name, data =>
-          checkCall(method, {
-            data,
-            socket,
-            config,
-            Manager,
-            io: SocketIO,
-          })
-        )
+      socket.on(name, data =>
+        checkCall(method, {
+          data,
+          socket,
+          config,
+          Manager,
+          io: SocketIO,
+        })
       )
+  )
 }
 
 /**
