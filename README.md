@@ -9,8 +9,8 @@
   - [Use](#use)
 
 ## Install
-* With NPM - `npm install @ltipton/parkin`
-* With Yarn - `yarn add @ltipton/parkin`
+* With NPM - `npm install @ltipton/sockr`
+* With Yarn - `yarn add @ltipton/sockr`
 
 ## Dependencies
 * [socket.io](https://www.npmjs.com/package/socket.io)
@@ -45,56 +45,108 @@ sockr(server, { /* ...config object */ })
 ## Specs
 * Sockr accepts a second argument, which should be an object adhering to the following specs
 
-### Backend Config
+## Backend Config
 ```ts
 {
   socket: <Object> {
     path: <String> 'Exposed endpoint of the websocket',
   },
-  commands: <Commands> /* Commands Model */,
-  filters: <Filters> /* Filters Model */,
-  process: <Process> /* Process Model */,
+  commands: <Commands> /* See Commands Model */,
+  filters: <Filters> /* See Filters Model */,
+  process: <Process> /* See Process Model */,
+  events: <Events> /* See Events Model */
 }
 ```
 ### Commands Model
 ```ts
 {
-  `<Group Key>`: <Object> { /* Group settings and commands the server is allowed to run */
-    filters: <Object> { /* String filters separated by command name */
-      all: <Array> [ /* Filters applied to all commands in the group */
-        <String> /* Filter string matching the command output to filter out */
-      ],
-      `<Command Name>`: <Array> [ /* Filters applied to a specific command */
-        <String> /* Filter string matching the command output to filter out */
-      ]
-    },
-    commands: <Object> { /* Commands within the group */
-      `<Command Name>`: <Command> /* Command model */
+  /* Other config properties */,
+  ...config,
+
+  /* Commands Model */
+  commands: {
+    `<Group Key>`: <Object> { /* Group settings and commands the server is allowed to run */
+      filters: <Object> { /* String filters separated by command name */
+        all: <Array> [ /* Filters applied to all commands in the group */
+          <String> /* Filter string matching the command output to filter out */
+        ],
+        `<Command Name>`: <Array> [ /* Filters applied to a specific command */
+          <String> /* Filter string matching the command output to filter out */
+        ]
+      },
+      commands: <Object> { /* Commands within the group */
+        `<Command Name>`: <Command> /* Command model */
+      }
     }
   }
 }
 ```
 
-### Command Model
-```ts
-
-```
-
 ### Filters Model
 ```ts
+{
+/* Other config properties */,
+  ...config,
+
+  /* Filters Model */
+  filters: {
+    /*  TODO */
+  }
+}
 ```
 
 ### Process Model
 ```ts
 {
-  command: <Object> { /* Settings for executing commands from a socket request */
-    default: <String> /* Default command run by the child process */ ('/bin/bash'),
-    overrides: <Array> [ /*Group of commands that can override the default*/
-      <String> /*Command that is allow to override the default command*/
-    ],
-  },
-  exec: <Object> { /* Settings to pass on to the spawned child_process */ },
-  root: <String> /* Working directory of the spawned child_process */ (process.cwd()),
-  script: <String> /* Default Script run by the spawned child_process */ (scripts/exec.sh),
+/* Other config properties */,
+  ...config,
+
+  /* Process Model */
+  process: {
+    command: <Object> { /* Settings for executing commands from a socket request */
+      default: <String> /* Default command run by the child process */ ('/bin/bash'),
+      overrides: <Array> [ /*Group of commands that can override the default*/
+        <String> /*Command that is allow to override the default command*/
+      ],
+    },
+    exec: <Object> { /* Settings to pass on to the spawned child_process */ },
+    root: <String> /* Working directory of the spawned child_process */ (process.cwd()),
+    script: <String> /* Default Script run by the spawned child_process */ (scripts/exec.sh),
+  }
+}
+```
+
+### Events Model
+```ts
+{
+  ...config,
+  events: {
+    <event-name>: () => { /* do something */ }
+  }
+}
+```
+**Notes**
+* Events property should be an object containing
+  * `key => value` pairs matching `event-name => event-function`
+* It allows you to pass in custom socket events that tie into socket.ios event listener `socket.on`
+  * So that when the event is emitted by the client or sockr, the function will be called
+* Some events are called by default by sockr for specific event. These events include
+  * `connection`: Called when a socket.io socket connects to the server => `socket.on('connection')`
+
+**Event Name**
+* The event name should formatted as **camelCase**, and the first letter should be lowercase
+  * Example
+    * **Good** - `myCustomEvent: () => {}`,
+    * **BAD** - `My-Custom-EVENT: () => {}`,
+
+**Event Function**
+* The event function is passed an object with the following properties
+```ts
+{
+  data: <Param> /* Params passed to the event when it fired */,
+  socket: <Socket.io Socket Instance> /* Socket the fired / relates to the event */,
+  config: <Sockr Config> /* Passed on Sockr Initialization */,
+  Manager:<Sockr Manager Instance> /* See Manager */,
+  io: <Socket.io Server Instance>,
 }
 ```

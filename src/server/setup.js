@@ -2,7 +2,7 @@ const SocketIO = require('socket.io')
 const { Manager } = require('./manager')
 const { Process } = require('./process')
 const { loadConfig } = require('./loadConfig')
-const { checkCall } = require('@keg-hub/jsutils')
+const { checkCall, get, noOpObj } = require('@keg-hub/jsutils')
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -33,19 +33,19 @@ const setupSocketCmds = (Proc, socket, config) => {
  * @returns {void}
  */
 const setupSocketEvents = (socket, config) => {
-  config &&
-    config.events &&
-    Object.entries(config.events).map(([ name, method ]) =>
-      socket.on(name, message =>
-        checkCall(method, {
-          message,
-          socket,
-          config,
-          Manager,
-          io: SocketIO,
-        })
+  Object.entries(get(config, 'events', noOpObj))
+    .map(([ name, method ]) =>
+      name !== 'connection' &&
+        socket.on(name, data =>
+          checkCall(method, {
+            data,
+            socket,
+            config,
+            Manager,
+            io: SocketIO,
+          })
+        )
       )
-    )
 }
 
 /**
@@ -82,6 +82,13 @@ const sockr = async (server, config, cmdGroup) => {
   io.on('connection', socket => {
     setupSocketCmds(Proc, socket, sockrConfig)
     setupSocketEvents(socket, sockrConfig)
+    // Call the connection event if it exists
+    checkCall(get(config, 'events.connection'), {
+      socket,
+      config,
+      Manager,
+      io: SocketIO,
+    })
   })
 }
 
