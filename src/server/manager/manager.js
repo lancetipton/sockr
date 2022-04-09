@@ -49,10 +49,12 @@ const logError = (err = noOpObj, method) => {
  */
 class SocketManager {
   constructor(opts = {}) {
+    this.cache = {}
     this.peers = {}
     this.socketIo
     this.isRunning = false
   }
+
 
   /**
    * Add tag formatting for custom events
@@ -124,7 +126,7 @@ class SocketManager {
    */
   add = socket => {
     this.peers[socket.id] = socket
-    socket.on('disconnect', _ => this.onDisconnect(socket))
+    this.cache[socket.id] = {}
 
     return socket.id
   }
@@ -346,6 +348,9 @@ class SocketManager {
     this.emit(socket, tag, {
       message: message || 'Missing authorization. Please login!',
     })
+    
+    // Clear any cache data if needed
+    delete this.cache[socket.id]
 
     // Wait a little bit tl allow the NOT_AUTHORIZED event to be sent,
     setTimeout(() => socket.disconnect(), 100)
@@ -368,6 +373,10 @@ class SocketManager {
     if (isStr(socket)) socket = this.getSocket(socket)
 
     try {
+
+      // Clear any cache data if needed
+      delete this.cache[socket.id]
+
       if (!this.peers[socket.id]) return
 
       delete this.peers[socket.id]

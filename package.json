@@ -52,9 +52,9 @@
     "test": "NODE_ENV=test jest --passWithNoTests --detectOpenHandles --no-cache --verbose --config=./configs/jest.config.js"
   },
   "dependencies": {
-    "@keg-hub/args-parse": "6.3.1",
-    "@keg-hub/spawn-cmd": "0.1.2",
-    "@keg-hub/jsutils": "8.6.0",
+    "@keg-hub/args-parse": "8.0.0",
+    "@keg-hub/spawn-cmd": "0.3.0",
+    "@keg-hub/jsutils": "9.0.3",
     "app-root-path": "3.0.0",
     "socket.io": "4.3.1",
     "socket.io-client": "4.3.2"

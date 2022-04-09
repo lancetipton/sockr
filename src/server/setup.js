@@ -2,7 +2,7 @@ const SocketIO = require('socket.io')
 const { Manager } = require('./manager')
 const { Process } = require('./process')
 const { loadConfig } = require('./loadConfig')
-const { checkCall, get, noOpObj } = require('@keg-hub/jsutils')
+const { checkCall, get, noOpObj, isFunc } = require('@keg-hub/jsutils')
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -33,19 +33,48 @@ const setupSocketCmds = (Proc, socket, config) => {
  * @returns {void}
  */
 const setupSocketEvents = (socket, config) => {
-  Object.entries(get(config, 'events', noOpObj)).map(
-    ([ name, method ]) =>
-      name !== 'connection' &&
-      socket.on(name, data =>
-        checkCall(method, {
-          data,
-          socket,
-          config,
-          Manager,
-          io: SocketIO,
-        })
-      )
+  const events = get(config, 'events', noOpObj)
+  // Ensure the onDisconnect event get attached to the socket if no disconnect event
+  !events.disconnect &&
+    socket.on('disconnect', _ => Manager.onDisconnect(socket))
+
+  Object.entries(events).map(
+    ([ name, method ]) => {
+      name !== 'connection' && name !== 'disconnect'
+        ? socket.on(name, data => checkCall(method, {
+            data,
+            socket,
+            config,
+            Manager,
+            io: SocketIO,
+          }))
+        : name === 'disconnect' &&
+            socket.on(name, async data => {
+              // If there's an disconnect event
+              // Call it first and catch any errors it throws
+              // then call the Manager.onDisconnect to ensure it's called
+              // Finally re-throw the error if one waw caught
+              let disconnectError
+              try {
+                isFunc(method) &&
+                  await method({
+                    data,
+                    socket,
+                    config,
+                    Manager,
+                    io: SocketIO,
+                  })
+              }
+              catch(err) { disconnectError = err }
+              Manager.onDisconnect(socket)
+
+              if(disconnectError) throw disconnectError
+            })
+    }
   )
+  
+  
+
 }
 
 /**
