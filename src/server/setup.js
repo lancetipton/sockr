@@ -38,41 +38,42 @@ const setupSocketEvents = (socket, config) => {
   !events.disconnect &&
     socket.on('disconnect', _ => Manager.onDisconnect(socket))
 
-  Object.entries(events).map(
-    ([ name, method ]) => {
-      name !== 'connection' && name !== 'disconnect'
-        ? socket.on(name, data => checkCall(method, {
-            data,
-            socket,
-            config,
-            Manager,
-            io: SocketIO,
-          }))
-        : name === 'disconnect' &&
-            socket.on(name, async data => {
-              // If there's an disconnect event
-              // Call it first and catch any errors it throws
-              // then call the Manager.onDisconnect to ensure it's called
-              // Finally re-throw the error if one waw caught
-              let disconnectError
-              try {
-                isFunc(method) &&
-                  await method({
-                    data,
-                    socket,
-                    config,
-                    Manager,
-                    io: SocketIO,
-                  })
-              }
-              catch(err) { disconnectError = err }
-              Manager.onDisconnect(socket)
+  Object.entries(events).map(([ name, method ]) => {
+    name !== 'connection' && name !== 'disconnect'
+      ? socket.on(name, data =>
+        checkCall(method, {
+          data,
+          socket,
+          config,
+          Manager,
+          io: SocketIO,
+        })
+      )
+      : name === 'disconnect' &&
+        socket.on(name, async data => {
+          // If there's an disconnect event
+          // Call it first and catch any errors it throws
+          // then call the Manager.onDisconnect to ensure it's called
+          // Finally re-throw the error if one waw caught
+          let disconnectError
+          try {
+            isFunc(method) &&
+              (await method({
+                data,
+                socket,
+                config,
+                Manager,
+                io: SocketIO,
+              }))
+          }
+          catch (err) {
+            disconnectError = err
+          }
+          Manager.onDisconnect(socket)
 
-              if(disconnectError) throw disconnectError
-            })
-    }
-  )
-
+          if (disconnectError) throw disconnectError
+        })
+  })
 }
 
 /**

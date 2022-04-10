@@ -56,7 +56,6 @@ class SocketManager {
     this.isRunning = false
   }
 
-
   /**
    * Add tag formatting for custom events
    * @param {string} tag - Event tag name used to emit the event
@@ -84,11 +83,11 @@ class SocketManager {
    */
   buildMessage = (message = noOpObj, socket) => {
     // Ensure the message is an object
-    const messageObj = isObj(message) ? message : {message}
+    const messageObj = isObj(message) ? message : { message }
     // If a socket is passed, add the socket Id and socket group Id
-    if(socket){
+    if (socket) {
       messageObj.socketId = socket.id
-      messageObj.groupId = get(this.cache, [socket.id, `groupId`])
+      messageObj.groupId = get(this.cache, [ socket.id, `groupId` ])
     }
 
     return deepMerge(
@@ -202,14 +201,19 @@ class SocketManager {
     try {
       if (isStr(socket)) socket = this.getSocket(socket)
 
-      if(!socket || !isFunc(socket.emit))
-        return console.error(`A Socket with an emit method is required to emit events!`)
+      if (!socket || !isFunc(socket.emit))
+        return console.error(
+          `A Socket with an emit method is required to emit events!`
+        )
 
-      const toSend = isObj(data) ? data : {data}
+      const toSend = isObj(data) ? data : { data }
       toSend.socketId = socket.id
-      toSend.groupId = get(this.cache, [socket.id, `groupId`])
+      toSend.groupId = get(this.cache, [ socket.id, `groupId` ])
 
-      socket.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(toSend, socket)))
+      socket.emit(
+        this.formatTag(tag),
+        this.toJsonStr(this.buildMessage(toSend, socket))
+      )
     }
     catch (err) {
       logError(err, 'emit')
@@ -267,14 +271,13 @@ class SocketManager {
           `SocketManager.emitAll requires an event tag as param 2!`
         )
 
-      const groupId = get(this.cache, [data.socketId, `groupId`])
+      const groupId = get(this.cache, [ data.socketId, `groupId` ])
 
       // TODO: Update to emit only to group room when group Id exists
       this.socketIo.emit(
         this.formatTag(tag),
-        this.toJsonStr(this.buildMessage({...data, groupId}))
+        this.toJsonStr(this.buildMessage({ ...data, groupId }))
       )
-
     }
     catch (err) {
       logError(err, 'emitAll')
@@ -362,7 +365,7 @@ class SocketManager {
     this.emit(socket, tag, {
       message: message || 'Missing authorization. Please login!',
     })
-    
+
     // Clear any cache data if needed
     delete this.cache[socket.id]
 
@@ -387,7 +390,6 @@ class SocketManager {
     if (isStr(socket)) socket = this.getSocket(socket)
 
     try {
-
       // Clear any cache data if needed
       delete this.cache[socket.id]
 

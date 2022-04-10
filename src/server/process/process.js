@@ -272,7 +272,7 @@ class Process {
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
       const socketId = socket.id
-      
+
       this.debugEvent(EventTypes.RUN_CMD, message)
 
       const { name, group } = message
