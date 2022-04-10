@@ -1,5 +1,6 @@
 const { EventTypes, tagPrefix } = require('../../constants')
 const {
+  get,
   isFunc,
   isObj,
   isStr,
@@ -81,8 +82,16 @@ class SocketManager {
    *
    * @returns {Object} - Message model object
    */
-  buildMessage = (message = noOpObj) =>
-    deepMerge(
+  buildMessage = (message = noOpObj, socket) => {
+    // Ensure the message is an object
+    const messageObj = isObj(message) ? message : {message}
+    // If a socket is passed, add the socket Id and socket group Id
+    if(socket){
+      messageObj.socketId = socket.id
+      messageObj.groupId = get(this.cache, [socket.id, `groupId`])
+    }
+
+    return deepMerge(
       {
         id: uuid(),
         message: '',
@@ -93,8 +102,9 @@ class SocketManager {
         isRunning: this.isRunning,
         timestamp: getTimeStamp(),
       },
-      message
+      messageObj
     )
+  }
 
   /**
    * Registers auth for connecting to the socket manager
@@ -192,14 +202,14 @@ class SocketManager {
     try {
       if (isStr(socket)) socket = this.getSocket(socket)
 
-      socket && isFunc(socket.emit)
-        ? socket.emit(
-          this.formatTag(tag),
-          this.toJsonStr(this.buildMessage(data))
-        )
-        : console.error(
-          `A Socket with an emit method is required to emit events!`
-        )
+      if(!socket || !isFunc(socket.emit))
+        return console.error(`A Socket with an emit method is required to emit events!`)
+
+      const toSend = isObj(data) ? data : {data}
+      toSend.socketId = socket.id
+      toSend.groupId = get(this.cache, [socket.id, `groupId`])
+
+      socket.emit(this.formatTag(tag), this.toJsonStr(this.buildMessage(toSend, socket)))
     }
     catch (err) {
       logError(err, 'emit')
@@ -228,7 +238,7 @@ class SocketManager {
         isFunc(socket.broadcast.emit) &&
         socket.broadcast.emit(
           this.formatTag(tag),
-          this.toJsonStr(this.buildMessage(data))
+          this.toJsonStr(this.buildMessage(data, socket))
         )
     }
     catch (err) {
@@ -257,10 +267,14 @@ class SocketManager {
           `SocketManager.emitAll requires an event tag as param 2!`
         )
 
+      const groupId = get(this.cache, [data.socketId, `groupId`])
+
+      // TODO: Update to emit only to group room when group Id exists
       this.socketIo.emit(
         this.formatTag(tag),
-        this.toJsonStr(this.buildMessage(data))
+        this.toJsonStr(this.buildMessage({...data, groupId}))
       )
+
     }
     catch (err) {
       logError(err, 'emitAll')

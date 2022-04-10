@@ -72,8 +72,6 @@ const setupSocketEvents = (socket, config) => {
             })
     }
   )
-  
-  
 
 }
 
