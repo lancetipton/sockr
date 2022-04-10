@@ -88,12 +88,13 @@ class Process {
    *
    * @returns {void}
    */
-  stdOutEmit = (data, cmd, group, name) => {
+  stdOutEmit = (data, cmd, group, name, socketId) => {
     !this.filterMessage(data, cmd, group, name) &&
       (() => {
         const emitMessage = {
           name,
           group,
+          socketId,
           message: data,
         }
 
@@ -115,10 +116,11 @@ class Process {
    *
    * @returns {void}
    */
-  stdErrEmit = (data, cmd, group, name) => {
+  stdErrEmit = (data, cmd, group, name, socketId) => {
     const emitMessage = {
       name,
       group,
+      socketId,
       message: data,
     }
 
@@ -141,12 +143,13 @@ class Process {
    *
    * @returns {void}
    */
-  onExitEmit = (code, cmd, group, name) => {
+  onExitEmit = (code, cmd, group, name, socketId) => {
     this.manager.isRunning = false
 
     const emitMessage = {
       name,
       group,
+      socketId,
       data: { exitCode: code },
     }
 
@@ -167,7 +170,7 @@ class Process {
    *
    * @returns {void}
    */
-  onErrorEmit = (err, cmd, group, name) => {
+  onErrorEmit = (err, cmd, group, name, socketId) => {
     const message =
       err.message.indexOf('ENOENT') !== -1
         ? `[ SOCKr CMD ERROR ] - Command '${cmd}' does not exist!\n\nMessage:\n${err.message}`
@@ -176,6 +179,7 @@ class Process {
     const emitMessage = {
       name,
       group,
+      socketId,
       error: true,
       message: message,
     }
@@ -202,12 +206,12 @@ class Process {
    *
    * @returns {Object} child process events object
    */
-  buildEvents = (cmd, params, group, name) => {
+  buildEvents = (cmd, params, group, name, socketId) => {
     return {
-      onExit: code => this.onExitEmit(code, cmd, group, name),
-      onStdOut: data => this.stdOutEmit(data, cmd, group, name),
-      onStdErr: data => this.stdErrEmit(data, cmd, group, name),
-      onError: err => this.onErrorEmit(err, cmd, group, name),
+      onExit: code => this.onExitEmit(code, cmd, group, name, socketId),
+      onStdOut: data => this.stdOutEmit(data, cmd, group, name, socketId),
+      onStdErr: data => this.stdErrEmit(data, cmd, group, name, socketId),
+      onError: err => this.onErrorEmit(err, cmd, group, name, socketId),
     }
   }
 
@@ -226,7 +230,7 @@ class Process {
    * @returns {Object} child process object
    */
   exec = message => {
-    const { name, cmd, params, group } = message
+    const { name, cmd, params, group, socketId } = message
 
     // Update the connected sockets, that a command is running
     this.manager.isRunning = true
@@ -234,6 +238,7 @@ class Process {
     const emitMessage = {
       name,
       group,
+      socketId,
       data: { cmd, params },
       message: 'Running command',
     }
@@ -245,7 +250,7 @@ class Process {
       cmd,
       message,
       this.config,
-      this.buildEvents(cmd, params, group, name)
+      this.buildEvents(cmd, params, group, name, socketId)
     )
 
     exec(this.config, ...cmdArr)
@@ -266,6 +271,8 @@ class Process {
     // Disable checking auth for now until injectable auth is setup
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
+      const socketId = socket.id
+
       this.debugEvent(EventTypes.RUN_CMD, message)
 
       const { name, group } = message
@@ -282,7 +289,7 @@ class Process {
         command.params = message.params
 
         // If a cmd and id is returned, then run the exec method
-        return command.cmd && this.exec(command)
+        return command.cmd && this.exec({ ...command, socketId })
       }
       catch (err) {
         this.debugError(err, message)
@@ -291,6 +298,7 @@ class Process {
         const emitMessage = {
           name,
           group,
+          socketId,
           error: true,
           message: `Error running command:\n${err.message}`,
         }
