@@ -7,7 +7,7 @@ jest.resetModules()
 jest.resetAllMocks()
 jest.clearAllMocks()
 
-describe('joinReducers', () => {
+describe('Process', () => {
   beforeEach(() => {
     sockrReducer.mockClear()
     customReducer.mockClear()

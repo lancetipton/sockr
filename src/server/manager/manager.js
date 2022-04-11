@@ -66,11 +66,11 @@ class SocketManager {
     if (EventTypeValues.includes(tag)) return tag
 
     const trimmed = tag.trim()
-    const [ ___, split ] = trimmed.startsWith(`${tagPrefix}:`)
+    const [ ___, ...split ] = trimmed.startsWith(`${tagPrefix}:`)
       ? trimmed.split(':')
       : [ null, trimmed ]
 
-    return `${tagPrefix}:${snakeCase(split).toUpperCase()}`
+    return `${tagPrefix}:${snakeCase(split.join(':').replace(/:\s/g,'_')).toUpperCase()}`
   }
 
   /**
