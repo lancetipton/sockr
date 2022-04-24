@@ -5,6 +5,7 @@ const {
   isObj,
   isStr,
   uuid,
+  noOp,
   noOpObj,
   snakeCase,
   checkCall,
@@ -66,11 +67,13 @@ class SocketManager {
     if (EventTypeValues.includes(tag)) return tag
 
     const trimmed = tag.trim()
-    const [ ___, split ] = trimmed.startsWith(`${tagPrefix}:`)
+    const [ ___, ...split ] = trimmed.startsWith(`${tagPrefix}:`)
       ? trimmed.split(':')
       : [ null, trimmed ]
 
-    return `${tagPrefix}:${snakeCase(split).toUpperCase()}`
+    return `${tagPrefix}:${snakeCase(
+      split.join(':').replace(/:\s/g, '_')
+    ).toUpperCase()}`
   }
 
   /**
@@ -116,9 +119,52 @@ class SocketManager {
    *
    * @returns {void}
    */
-  setAuth = auth => {
-    // TODO: add injectable auth setup
-    // this.auth = auth
+  setAuth = (config = noOpObj) => {
+    const { onAuthenticate = noOp, onAuthFail = noOp } = config
+    this.auth = (socket, event, message, callback) => {
+      const eventArgs = {
+        data: message,
+        socket,
+        config,
+        event,
+        io: this.socketIo,
+      }
+      new Promise(async (res, rej) => {
+        try {
+          await onAuthenticate(eventArgs)
+          res(true)
+        }
+        catch (err) {
+          rej(err)
+        }
+      })
+        .then(() => checkCall(callback, eventArgs))
+        .catch(err => {
+          onAuthFail({ ...eventArgs, err })
+          this.onDisconnect(socket)
+        })
+    }
+  }
+
+  /**
+   * Checks for authorization of a socket request
+   * @memberof SocketManager
+   * @alias instance&period;checkAuth
+   * @todo - Implement auth
+   * @todo - Checks the sockets auth before allow a socket request
+   * @function
+   * @public
+   * @param {Object|string} socket - Socket.io socket object or socket id
+   * @param {string} event - Name of the event that was received
+   * @param {string} message - Message returned when socket is not authorized
+   * @param {function} callback - Called when the socket has been authorized
+   *
+   * @returns {*} - Response from the passed in callback method
+   */
+  checkAuth = (socket, event, message, callback) => {
+    return !this.auth
+      ? checkCall(callback, this, socket, message)
+      : this.auth(socket, event, message, callback)
   }
 
   /**
@@ -282,25 +328,6 @@ class SocketManager {
     catch (err) {
       logError(err, 'emitAll')
     }
-  }
-
-  /**
-   * Checks for authorization of a socket request
-   * @memberof SocketManager
-   * @alias instance&period;checkAuth
-   * @todo - Implement auth
-   * @todo - Checks the sockets auth before allow a socket request
-   * @function
-   * @public
-   * @param {Object|string} socket - Socket.io socket object or socket id
-   * @param {string} message - Message returned when socket is not authorized
-   * @param {function} cb - Called when the socket has been authorized
-   *
-   * @returns {*} - Response from the passed in callback method
-   */
-  checkAuth = async (socket, message, cb) => {
-    // TODO Add injectable auth method
-    return checkCall(cb, this, socket, message)
   }
 
   /**

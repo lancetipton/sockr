@@ -229,7 +229,7 @@ const buildEndpoint = config => {
 const checkCallEvent = (action, message, instance, event) => {
   return jsutils.checkCall(action, message, instance, event);
 };
-const callAction = (instance, event, action) => {
+const callAction = (instance, event) => {
   const eventName = jsutils.camelCase((event.split(':')[1] || '').toLowerCase());
   return data => {
     if (!eventName) return instance.logData(`Invalid event name!`, event);
@@ -258,7 +258,13 @@ class SocketService {
       if (!this.socket) return console.error(`Socket not connected, cannot emit socket event!`);
       if (!event) return console.error(`Event type is missing, cannot emit socket event without an event type!`, event);
       this.logData(`Sending Socket Event: ${event}`, data);
-      this.socket.emit(event, data);
+      const toSend = jsutils.isObj(data) ? { ...data,
+        token: this.token
+      } : {
+        data,
+        token: this.token
+      };
+      this.socket.emit(event, toSend);
     });
     _defineProperty(this, "disconnect", () => {
       if (!this.socket) return this.logData(`Socket already disconnected!`);
@@ -279,11 +285,17 @@ class SocketService {
     if (this.socket) return;
     this.config = config;
     this.logDebug = logDebug;
+    this.token = token;
     const endpoint = buildEndpoint(config);
     this.logData(`Connecting to backend socket => ${endpoint}${config.path}`);
     this.socket = io__default["default"](endpoint, {
       path: config.path,
-      transports: ['websocket', 'polling', 'flashsocket']
+      transports: ['websocket', 'polling', 'flashsocket'],
+      ...(token && {
+        auth: {
+          token
+        }
+      })
     });
     this.addEvents(token);
   }
@@ -302,7 +314,7 @@ class SocketService {
   }
   onConnection(token, data) {
     const connectAction = callAction(this, `${eventTypes.tagPrefix}:CONNECT`);
-    connectAction(data);
+    connectAction(data, token);
   }
   runCommand(command, params) {
     const {
@@ -316,7 +328,8 @@ class SocketService {
       cmd,
       name,
       group,
-      params
+      params,
+      token: this.token
     });
   }
 }

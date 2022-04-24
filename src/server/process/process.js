@@ -1,6 +1,5 @@
 const path = require('path')
 const { exec } = require('./exec')
-const { Manager } = require('../manager')
 const { EventTypes } = require('../../constants')
 const { shouldFilterMessage, validateCmd, addConfig } = require('./helpers')
 const { deepMerge, noOpObj } = require('@keg-hub/jsutils')
@@ -33,7 +32,7 @@ class Process {
     debug: false,
   }
 
-  constructor(commands, filters, config) {
+  constructor(Manager, commands, filters, config) {
     this.commands = commands || noOpObj
     this.filters = filters || noOpObj
     this.manager = Manager
@@ -271,42 +270,44 @@ class Process {
     // Disable checking auth for now until injectable auth is setup
     // this.manager.checkAuth(socket, message, () => {})
     socket.on(EventTypes.RUN_CMD, message => {
-      const socketId = socket.id
+      this.manager.checkAuth(socket, EventTypes.RUN_CMD, message, () => {
+        const socketId = socket.id
 
-      this.debugEvent(EventTypes.RUN_CMD, message)
+        this.debugEvent(EventTypes.RUN_CMD, message)
 
-      const { name, group } = message
+        const { name, group } = message
 
-      try {
-        // Validate the cmd to ensure it is allowed to run
-        const command = validateCmd(
-          message,
-          this.commands,
-          this.manager,
-          this.config
-        )
-        // Set the params to be the passed in params
-        command.params = message.params
+        try {
+          // Validate the cmd to ensure it is allowed to run
+          const command = validateCmd(
+            message,
+            this.commands,
+            this.manager,
+            this.config
+          )
+          // Set the params to be the passed in params
+          command.params = message.params
 
-        // If a cmd and id is returned, then run the exec method
-        return command.cmd && this.exec({ ...command, socketId })
-      }
-      catch (err) {
-        this.debugError(err, message)
-        this.manager.isRunning = false
-
-        const emitMessage = {
-          name,
-          group,
-          socketId,
-          error: true,
-          message: `Error running command:\n${err.message}`,
+          // If a cmd and id is returned, then run the exec method
+          return command.cmd && this.exec({ ...command, socketId })
         }
+        catch (err) {
+          this.debugError(err, message)
+          this.manager.isRunning = false
 
-        this.debugEvent(EventTypes.RUN_CMD, emitMessage)
+          const emitMessage = {
+            name,
+            group,
+            socketId,
+            error: true,
+            message: `Error running command:\n${err.message}`,
+          }
 
-        this.manager.emitAll(EventTypes.CMD_RUNNING, emitMessage)
-      }
+          this.debugEvent(EventTypes.RUN_CMD, emitMessage)
+
+          this.manager.emitAll(EventTypes.CMD_RUNNING, emitMessage)
+        }
+      })
     })
   }
 }

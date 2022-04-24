@@ -1,5 +1,5 @@
 const SocketIO = require('socket.io')
-const { Manager } = require('./manager')
+const { SocketManager } = require('./manager')
 const { Process } = require('./process')
 const { loadConfig } = require('./loadConfig')
 const { checkCall, get, noOpObj, isFunc } = require('@keg-hub/jsutils')
@@ -14,7 +14,7 @@ const { checkCall, get, noOpObj, isFunc } = require('@keg-hub/jsutils')
  *
  * @returns {void}
  */
-const setupSocketCmds = (Proc, socket, config) => {
+const setupSocketCmds = (Manager, Proc, socket, config) => {
   // Setup the socket, and update connected peers
   Manager.setupSocket(socket, config.commands)
 
@@ -32,23 +32,27 @@ const setupSocketCmds = (Proc, socket, config) => {
  *
  * @returns {void}
  */
-const setupSocketEvents = (socket, config) => {
-  const events = get(config, 'events', noOpObj)
+const setupSocketEvents = (Manager, socket, config, io) => {
+  const { events = noOpObj } = config
+
   // Ensure the onDisconnect event get attached to the socket if no disconnect event
   !events.disconnect &&
     socket.on('disconnect', _ => Manager.onDisconnect(socket))
 
   Object.entries(events).map(([ name, method ]) => {
     name !== 'connection' && name !== 'disconnect'
-      ? socket.on(name, data =>
-        checkCall(method, {
-          data,
-          socket,
-          config,
-          Manager,
-          io: SocketIO,
+      ? socket.on(name, async data => {
+        Manager.checkAuth(socket, name, data, () => {
+          checkCall(method, {
+            data,
+            socket,
+            config,
+            event: name,
+            Manager,
+            io,
+          })
         })
-      )
+      })
       : name === 'disconnect' &&
         socket.on(name, async data => {
           // If there's an disconnect event
@@ -59,11 +63,12 @@ const setupSocketEvents = (socket, config) => {
           try {
             isFunc(method) &&
               (await method({
+                io,
                 data,
                 socket,
                 config,
                 Manager,
-                io: SocketIO,
+                event: name,
               }))
           }
           catch (err) {
@@ -95,12 +100,17 @@ const sockr = async (server, config, cmdGroup) => {
 
   // attache to the server
   io.attach(server)
+  const Manager = new SocketManager()
 
   // Ensure we have access to the SocketIO class
   Manager.socketIo = Manager.socketIo || io
 
+  // Configure authentication
+  Manager.setAuth(config)
+
   // Create a new process instance
   const Proc = new Process(
+    Manager,
     sockrConfig.commands,
     sockrConfig.filters,
     sockrConfig.process
@@ -108,19 +118,28 @@ const sockr = async (server, config, cmdGroup) => {
 
   // Setup the socket listener, and add socket commands listener
   io.on('connection', socket => {
-    setupSocketCmds(Proc, socket, sockrConfig)
-    setupSocketEvents(socket, sockrConfig)
-    // Call the connection event if it exists
-    checkCall(get(config, 'events.connection'), {
-      socket,
-      config,
-      Manager,
-      io: SocketIO,
+    Manager.checkAuth(socket, 'connection', {}, () => {
+      setupSocketCmds(Manager, Proc, socket, sockrConfig)
+      setupSocketEvents(Manager, socket, sockrConfig, io)
+      // Call the connection event if it exists
+      checkCall(get(config, 'events.connection'), {
+        io,
+        socket,
+        config,
+        Manager,
+        event: 'connection',
+      })
     })
   })
+
+  return {
+    io,
+    Manager,
+    sockrConfig,
+    Process: Proc,
+  }
 }
 
 module.exports = {
   sockr,
-  Manager,
 }

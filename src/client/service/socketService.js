@@ -56,7 +56,7 @@ const checkCallEvent = (action, message, instance, event) => {
  *
  * @returns {void}
  */
-const callAction = (instance, event, action) => {
+const callAction = (instance, event) => {
   const eventName = camelCase((event.split(':')[1] || '').toLowerCase())
 
   return data => {
@@ -171,6 +171,7 @@ export class SocketService {
 
     this.config = config
     this.logDebug = logDebug
+    this.token = token
 
     const endpoint = buildEndpoint(config)
 
@@ -180,6 +181,7 @@ export class SocketService {
     this.socket = io(endpoint, {
       path: config.path,
       transports: [ 'websocket', 'polling', 'flashsocket' ],
+      ...(token && { auth: { token } }),
     })
 
     this.addEvents(token)
@@ -245,7 +247,7 @@ export class SocketService {
     // this.emit(EventTypes.AUTH_TOKEN, { token: token })
     // Then call the `callAction` with the connected event args
     const connectAction = callAction(this, `${tagPrefix}:CONNECT`)
-    connectAction(data)
+    connectAction(data, token)
   }
 
   /**
@@ -270,8 +272,12 @@ export class SocketService {
 
     this.logData(`Sending Socket Event: ${event}`, data)
 
+    const toSend = isObj(data)
+      ? { ...data, token: this.token }
+      : { data, token: this.token }
+
     // Send a message to the server
-    this.socket.emit(event, data)
+    this.socket.emit(event, toSend)
   }
 
   /**
@@ -292,6 +298,7 @@ export class SocketService {
       name,
       group,
       params,
+      token: this.token,
     })
   }
 
