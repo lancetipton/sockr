@@ -71,7 +71,9 @@ class SocketManager {
       ? trimmed.split(':')
       : [ null, trimmed ]
 
-    return `${tagPrefix}:${snakeCase(split.join(':').replace(/:\s/g,'_')).toUpperCase()}`
+    return `${tagPrefix}:${snakeCase(
+      split.join(':').replace(/:\s/g, '_')
+    ).toUpperCase()}`
   }
 
   /**
@@ -117,24 +119,30 @@ class SocketManager {
    *
    * @returns {void}
    */
-  setAuth = (config=noOpObj) => {
-    const { onAuthenticate=noOp, onAuthFail=noOp } = config
+  setAuth = (config = noOpObj) => {
+    const { onAuthenticate = noOp, onAuthFail = noOp } = config
     this.auth = (socket, event, message, callback) => {
-      const eventArgs = {data:message, socket, config, event, io: this.socketIo}
+      const eventArgs = {
+        data: message,
+        socket,
+        config,
+        event,
+        io: this.socketIo,
+      }
       new Promise(async (res, rej) => {
         try {
           await onAuthenticate(eventArgs)
           res(true)
         }
-        catch(err){
+        catch (err) {
           rej(err)
         }
       })
-      .then(() => checkCall(callback, eventArgs))
-      .catch(err => {
-        onAuthFail({...eventArgs, err})
-        this.onDisconnect(socket)
-      })
+        .then(() => checkCall(callback, eventArgs))
+        .catch(err => {
+          onAuthFail({ ...eventArgs, err })
+          this.onDisconnect(socket)
+        })
     }
   }
 

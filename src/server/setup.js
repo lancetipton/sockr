@@ -2,12 +2,7 @@ const SocketIO = require('socket.io')
 const { SocketManager } = require('./manager')
 const { Process } = require('./process')
 const { loadConfig } = require('./loadConfig')
-const { checkCall, get, noOpObj, isFunc, noOp } = require('@keg-hub/jsutils')
-
-
-const authWrapper = (socket, config, event, method, io) => {
-  
-}
+const { checkCall, get, noOpObj, isFunc } = require('@keg-hub/jsutils')
 
 /**
  * Sets up the commands that can be run by the backend socket
@@ -38,7 +33,7 @@ const setupSocketCmds = (Manager, Proc, socket, config) => {
  * @returns {void}
  */
 const setupSocketEvents = (Manager, socket, config, io) => {
-  const { events=noOpObj } = config
+  const { events = noOpObj } = config
 
   // Ensure the onDisconnect event get attached to the socket if no disconnect event
   !events.disconnect &&
@@ -47,10 +42,17 @@ const setupSocketEvents = (Manager, socket, config, io) => {
   Object.entries(events).map(([ name, method ]) => {
     name !== 'connection' && name !== 'disconnect'
       ? socket.on(name, async data => {
-          Manager.checkAuth(socket, name, data, () => {
-            checkCall(method, {data, socket, config, event: name, Manager, io})
+        Manager.checkAuth(socket, name, data, () => {
+          checkCall(method, {
+            data,
+            socket,
+            config,
+            event: name,
+            Manager,
+            io,
           })
         })
+      })
       : name === 'disconnect' &&
         socket.on(name, async data => {
           // If there's an disconnect event
@@ -125,7 +127,7 @@ const sockr = async (server, config, cmdGroup) => {
         socket,
         config,
         Manager,
-        event: 'connection'
+        event: 'connection',
       })
     })
   })
@@ -134,10 +136,10 @@ const sockr = async (server, config, cmdGroup) => {
     io,
     Manager,
     sockrConfig,
-    Process: Proc
+    Process: Proc,
   }
 }
 
 module.exports = {
-  sockr
+  sockr,
 }

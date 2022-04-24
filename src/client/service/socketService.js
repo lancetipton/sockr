@@ -181,7 +181,7 @@ export class SocketService {
     this.socket = io(endpoint, {
       path: config.path,
       transports: [ 'websocket', 'polling', 'flashsocket' ],
-      ...(token && { auth: { token } })
+      ...(token && { auth: { token } }),
     })
 
     this.addEvents(token)
@@ -273,8 +273,8 @@ export class SocketService {
     this.logData(`Sending Socket Event: ${event}`, data)
 
     const toSend = isObj(data)
-      ? {...data, token: this.token}
-      : {data, token: this.token}
+      ? { ...data, token: this.token }
+      : { data, token: this.token }
 
     // Send a message to the server
     this.socket.emit(event, toSend)
@@ -298,7 +298,7 @@ export class SocketService {
       name,
       group,
       params,
-      token: this.token
+      token: this.token,
     })
   }
 
