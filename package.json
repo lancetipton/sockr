@@ -1,6 +1,6 @@
 {
   "name": "@ltipton/sockr",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Wrapper around socket.io for the server and client",
   "main": "build",
   "module": "build/client/esm",
