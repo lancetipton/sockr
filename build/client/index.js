@@ -86,6 +86,7 @@ const useSockrItems = (findPaths = jsutils.noPropArr) => {
 };
 
 const TAG_PREFIX = 'SOCKr';
+const authTokenHeader = `SOCKR-AUTH-TOKEN`;
 const EventTypes = {
   INIT: `${TAG_PREFIX}:INIT`,
   SET_ID: `${TAG_PREFIX}:SET_ID`,
@@ -105,6 +106,7 @@ const EventTypes = {
 };
 var eventTypes = {
   EventTypes,
+  authTokenHeader,
   tagPrefix: TAG_PREFIX
 };
 
@@ -223,8 +225,11 @@ var InternalActions = /*#__PURE__*/Object.freeze({
 });
 
 const buildEndpoint = config => {
-  const protocol = jsutils.get(window, 'location.protocol', 'https:');
-  return config.port ? `${protocol}//${config.host}:${config.port}` : config.host;
+  if (config.endpoint) return config.endpoint;
+  const win = typeof window === 'undefined' ? {} : window;
+  const protocol = jsutils.get(win, 'location.protocol', 'https:');
+  const namespace = !config.namespace ? `` : config.namespace.startsWith(`/`) ? config.namespace : `/${config.namespace}`;
+  return config.port ? `${protocol}//${config.host}:${config.port}${namespace}`.trim() : `${config.host}${namespace}`.trim();
 };
 const checkCallEvent = (action, message, instance, event) => {
   return jsutils.checkCall(action, message, instance, event);
@@ -254,6 +259,7 @@ const getCommand = (commands, cmdOrId) => {
 };
 class SocketService {
   constructor() {
+    _defineProperty(this, "io", io__default["default"]);
     _defineProperty(this, "emit", (event, data) => {
       if (!this.socket) return console.error(`Socket not connected, cannot emit socket event!`);
       if (!event) return console.error(`Event type is missing, cannot emit socket event without an event type!`, event);
@@ -288,18 +294,23 @@ class SocketService {
     this.token = token;
     const endpoint = buildEndpoint(config);
     this.logData(`Connecting to backend socket => ${endpoint}${config.path}`);
+    const ioConfig = config.ioConfig || {
+      extraHeaders: {}
+    };
     this.socket = io__default["default"](endpoint, {
       path: config.path,
       transports: ['websocket', 'polling', 'flashsocket'],
-      ...(token && {
-        auth: {
-          token
-        }
-      })
+      ...ioConfig,
+      extraHeaders: { ...(ioConfig.extraHeaders || {}),
+        ...(token ? {
+          [eventTypes.authTokenHeader]: token
+        } : {})
+      }
     });
-    this.addEvents(token);
+    this.addEvents();
+    return this;
   }
-  addEvents(token) {
+  addEvents() {
     if (!this.socket) return;
     Object.entries(jsutils.get(this.config, 'events', jsutils.noOpObj)).map(([name, action]) => {
       const namCaps = jsutils.snakeCase(name).toUpperCase();
@@ -310,7 +321,7 @@ class SocketService {
     Object.entries(frozenEvents).map(([key, eventType]) => {
       this.socket.on(eventType, callAction(this, eventType));
     });
-    this.socket.on(`connect`, this.onConnection.bind(this, token));
+    this.socket.on(`connect`, this.onConnection.bind(this));
   }
   onConnection(token, data) {
     const connectAction = callAction(this, `${eventTypes.tagPrefix}:CONNECT`);
@@ -433,6 +444,7 @@ exports.SocketService = SocketService;
 exports.SockrHoc = SockrHoc;
 exports.SockrProvider = SockrProvider;
 exports.WSService = WSService;
+exports.authTokenHeader = eventTypes.authTokenHeader;
 exports.tagPrefix = eventTypes.tagPrefix;
 exports.useSockr = useSockr;
 exports.useSockrItems = useSockrItems;

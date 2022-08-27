@@ -77,6 +77,7 @@ const useSockrItems = (findPaths = noPropArr) => {
 };
 
 const TAG_PREFIX = 'SOCKr';
+const authTokenHeader = `SOCKR-AUTH-TOKEN`;
 const EventTypes = {
   INIT: `${TAG_PREFIX}:INIT`,
   SET_ID: `${TAG_PREFIX}:SET_ID`,
@@ -96,6 +97,7 @@ const EventTypes = {
 };
 var eventTypes = {
   EventTypes,
+  authTokenHeader,
   tagPrefix: TAG_PREFIX
 };
 
@@ -214,8 +216,11 @@ var InternalActions = /*#__PURE__*/Object.freeze({
 });
 
 const buildEndpoint = config => {
-  const protocol = get(window, 'location.protocol', 'https:');
-  return config.port ? `${protocol}//${config.host}:${config.port}` : config.host;
+  if (config.endpoint) return config.endpoint;
+  const win = typeof window === 'undefined' ? {} : window;
+  const protocol = get(win, 'location.protocol', 'https:');
+  const namespace = !config.namespace ? `` : config.namespace.startsWith(`/`) ? config.namespace : `/${config.namespace}`;
+  return config.port ? `${protocol}//${config.host}:${config.port}${namespace}`.trim() : `${config.host}${namespace}`.trim();
 };
 const checkCallEvent = (action, message, instance, event) => {
   return checkCall(action, message, instance, event);
@@ -245,6 +250,7 @@ const getCommand = (commands, cmdOrId) => {
 };
 class SocketService {
   constructor() {
+    _defineProperty(this, "io", io);
     _defineProperty(this, "emit", (event, data) => {
       if (!this.socket) return console.error(`Socket not connected, cannot emit socket event!`);
       if (!event) return console.error(`Event type is missing, cannot emit socket event without an event type!`, event);
@@ -279,18 +285,31 @@ class SocketService {
     this.token = token;
     const endpoint = buildEndpoint(config);
     this.logData(`Connecting to backend socket => ${endpoint}${config.path}`);
+    const ioConfig = config.ioConfig || {
+      extraHeaders: {}
+    };
     this.socket = io(endpoint, {
       path: config.path,
       transports: ['websocket', 'polling', 'flashsocket'],
+<<<<<<< HEAD
       ...(token && {
         auth: {
           token
         }
       })
+=======
+      ...ioConfig,
+      extraHeaders: { ...(ioConfig.extraHeaders || {}),
+        ...(token ? {
+          [eventTypes.authTokenHeader]: token
+        } : {})
+      }
+>>>>>>> 649fb54 (feat: rebuild changes)
     });
-    this.addEvents(token);
+    this.addEvents();
+    return this;
   }
-  addEvents(token) {
+  addEvents() {
     if (!this.socket) return;
     Object.entries(get(this.config, 'events', noOpObj)).map(([name, action]) => {
       const namCaps = snakeCase(name).toUpperCase();
@@ -301,7 +320,7 @@ class SocketService {
     Object.entries(frozenEvents).map(([key, eventType]) => {
       this.socket.on(eventType, callAction(this, eventType));
     });
-    this.socket.on(`connect`, this.onConnection.bind(this, token));
+    this.socket.on(`connect`, this.onConnection.bind(this));
   }
   onConnection(token, data) {
     const connectAction = callAction(this, `${eventTypes.tagPrefix}:CONNECT`);
@@ -419,6 +438,7 @@ const SockrProvider = props => {
   }, React.createElement(MemoChildren, null, children));
 };
 
+var authTokenHeader$1 = eventTypes.authTokenHeader;
 var tagPrefix = eventTypes.tagPrefix;
-export { frozenEvents as EventTypes, SocketService, SockrHoc, SockrProvider, WSService, tagPrefix, useSockr, useSockrItems };
+export { frozenEvents as EventTypes, SocketService, SockrHoc, SockrProvider, WSService, authTokenHeader$1 as authTokenHeader, tagPrefix, useSockr, useSockrItems };
 //# sourceMappingURL=index.js.map
