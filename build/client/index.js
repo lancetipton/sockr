@@ -300,6 +300,11 @@ class SocketService {
     this.socket = io__default["default"](endpoint, {
       path: config.path,
       transports: ['websocket', 'polling', 'flashsocket'],
+      ...(token && {
+        auth: {
+          token
+        }
+      }),
       ...ioConfig,
       extraHeaders: { ...(ioConfig.extraHeaders || {}),
         ...(token ? {

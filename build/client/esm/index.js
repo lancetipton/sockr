@@ -291,20 +291,17 @@ class SocketService {
     this.socket = io(endpoint, {
       path: config.path,
       transports: ['websocket', 'polling', 'flashsocket'],
-<<<<<<< HEAD
       ...(token && {
         auth: {
           token
         }
-      })
-=======
+      }),
       ...ioConfig,
       extraHeaders: { ...(ioConfig.extraHeaders || {}),
         ...(token ? {
           [eventTypes.authTokenHeader]: token
         } : {})
       }
->>>>>>> 649fb54 (feat: rebuild changes)
     });
     this.addEvents();
     return this;
