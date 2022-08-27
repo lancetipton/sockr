@@ -1,4 +1,5 @@
 const TAG_PREFIX = 'SOCKr'
+const authTokenHeader = `SOCKR-AUTH-TOKEN`
 
 const EventTypes = {
   // General
@@ -29,5 +30,6 @@ const EventTypes = {
 
 module.exports = {
   EventTypes,
+  authTokenHeader,
   tagPrefix: TAG_PREFIX,
 }

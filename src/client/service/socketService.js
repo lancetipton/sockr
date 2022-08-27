@@ -8,7 +8,7 @@ import {
   snakeCase,
   isObj,
 } from '@keg-hub/jsutils'
-import { EventTypes, tagPrefix } from '../constants'
+import { EventTypes, tagPrefix, authTokenHeader } from '../constants'
 import * as InternalActions from '../actions'
 
 /**
@@ -21,11 +21,21 @@ import * as InternalActions from '../actions'
  * @returns {string} - Built websocket endpoint
  */
 const buildEndpoint = config => {
+  if(config.endpoint) return config.endpoint
+
   // Use the same http protocol as what the current window is using
-  const protocol = get(window, 'location.protocol', 'https:')
+  const win = typeof window === 'undefined' ? {} : window
+  const protocol = get(win, 'location.protocol', 'https:')
+  
+  const namespace = !config.namespace
+    ? ``
+    : config.namespace.startsWith(`/`)
+      ? config.namespace
+      : `/${config.namespace}`
+
   return config.port
-    ? `${protocol}//${config.host}:${config.port}`
-    : config.host
+    ? `${protocol}//${config.host}:${config.port}${namespace}`.trim()
+    : `${config.host}${namespace}`.trim()
 }
 
 /**
@@ -125,6 +135,9 @@ const getCommand = (commands, cmdOrId) => {
  * @returns {Object} - Instance of SocketService
  */
 export class SocketService {
+
+  io = io
+  
   /**
    * Helper to log data when logDebug is true
    * @memberof SocketService
@@ -176,13 +189,22 @@ export class SocketService {
 
     this.logData(`Connecting to backend socket => ${endpoint}${config.path}`)
 
+    const ioConfig = config.ioConfig || { extraHeaders: {} }
+
     // Setup the socket, and connect to the server
     this.socket = io(endpoint, {
       path: config.path,
       transports: [ 'websocket', 'polling', 'flashsocket' ],
+      ...ioConfig,
+      extraHeaders: {
+        ...(ioConfig.extraHeaders || {}),
+        ...(token ? { [authTokenHeader]: token } : {})
+      }
     })
 
-    this.addEvents(token)
+    this.addEvents()
+
+    return this
   }
 
   /**
@@ -198,7 +220,7 @@ export class SocketService {
    *
    * @returns {void}
    */
-  addEvents(token) {
+  addEvents() {
     if (!this.socket) return
 
     // Map the custom config.events with valid actions
@@ -226,7 +248,7 @@ export class SocketService {
 
     // Initial connection to the server through the socket
     // Call the onConnection method which will handel authorization
-    this.socket.on(`connect`, this.onConnection.bind(this, token))
+    this.socket.on(`connect`, this.onConnection.bind(this))
   }
 
   /**
