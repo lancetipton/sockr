@@ -21,12 +21,12 @@ import * as InternalActions from '../actions'
  * @returns {string} - Built websocket endpoint
  */
 const buildEndpoint = config => {
-  if(config.endpoint) return config.endpoint
+  if (config.endpoint) return config.endpoint
 
   // Use the same http protocol as what the current window is using
   const win = typeof window === 'undefined' ? {} : window
   const protocol = get(win, 'location.protocol', 'https:')
-  
+
   const namespace = !config.namespace
     ? ``
     : config.namespace.startsWith(`/`)
@@ -135,9 +135,8 @@ const getCommand = (commands, cmdOrId) => {
  * @returns {Object} - Instance of SocketService
  */
 export class SocketService {
-
   io = io
-  
+
   /**
    * Helper to log data when logDebug is true
    * @memberof SocketService
@@ -198,8 +197,8 @@ export class SocketService {
       ...ioConfig,
       extraHeaders: {
         ...(ioConfig.extraHeaders || {}),
-        ...(token ? { [authTokenHeader]: token } : {})
-      }
+        ...(token ? { [authTokenHeader]: token } : {}),
+      },
     })
 
     this.addEvents()
